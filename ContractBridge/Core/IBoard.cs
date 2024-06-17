@@ -8,9 +8,9 @@ namespace ContractBridge.Core
 
         delegate void VulnerabilitySetHandler(IBoard board, Vulnerability vulnerability);
 
-        Seat Dealer { get; set; }
+        Seat? Dealer { get; set; }
 
-        Vulnerability Vulnerability { get; set; }
+        Vulnerability? Vulnerability { get; set; }
 
         IPairFactory PairFactory { get; }
 

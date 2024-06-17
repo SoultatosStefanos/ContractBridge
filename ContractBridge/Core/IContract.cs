@@ -6,7 +6,7 @@ namespace ContractBridge.Core
     {
         Seat Declarer { get; }
 
-        Risk Risk { get; }
+        Risk? Risk { get; }
     }
 
     public static class ContractExtensions

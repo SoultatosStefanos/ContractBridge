@@ -12,11 +12,17 @@ namespace ContractBridge.Core
 
         ITurnManager TurnManager { get; }
 
-        IAuction Auction { get; }
+        IAuctionFactory AuctionFactory { get; }
 
-        IGame Game { get; }
+        IGameFactory GameFactory { get; }
 
-        IScoring Scoring { get; }
+        IScoringFactory ScoringFactory { get; }
+
+        IAuction? Auction { get; }
+
+        IGame? Game { get; }
+
+        IScoring? Scoring { get; }
 
         event PhaseChangeHandler PhaseChanged;
     }
