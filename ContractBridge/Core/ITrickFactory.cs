@@ -4,6 +4,6 @@ namespace ContractBridge.Core
 {
     public interface ITrickFactory
     {
-        ITrick NewTrick(IEnumerable<ICard> cards);
+        ITrick Create(IEnumerable<ICard> cards);
     }
 }

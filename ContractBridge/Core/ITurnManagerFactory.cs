@@ -2,6 +2,6 @@ namespace ContractBridge.Core
 {
     public interface ITurnManagerFactory
     {
-        ITurnManager NewTurnManager(ITurnFactory turnFactory);
+        ITurnManager Create(ITurnFactory turnFactory);
     }
 }

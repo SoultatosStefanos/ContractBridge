@@ -2,6 +2,6 @@ namespace ContractBridge.Core
 {
     public interface IAuctionFactory
     {
-        IAuction NewAuction(IBoard board, IContractFactory contractFactory);
+        IAuction Create(IBoard board, IContractFactory contractFactory);
     }
 }
