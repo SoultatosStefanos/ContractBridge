@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractBridge", "ContractBridge\ContractBridge.csproj", "{986D2DC0-2A4F-41E9-BE0F-7FE1F39D2CDB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractBridge.Tests", "ContractBridge.Tests\ContractBridge.Tests.csproj", "{BF2F71DC-AF2E-426F-9566-79268243908C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{986D2DC0-2A4F-41E9-BE0F-7FE1F39D2CDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{986D2DC0-2A4F-41E9-BE0F-7FE1F39D2CDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{986D2DC0-2A4F-41E9-BE0F-7FE1F39D2CDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{986D2DC0-2A4F-41E9-BE0F-7FE1F39D2CDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF2F71DC-AF2E-426F-9566-79268243908C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF2F71DC-AF2E-426F-9566-79268243908C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF2F71DC-AF2E-426F-9566-79268243908C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF2F71DC-AF2E-426F-9566-79268243908C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
