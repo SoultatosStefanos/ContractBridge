@@ -73,6 +73,7 @@
         <Compile Include="Core\ITurnFactory.cs"/>
         <Compile Include="Core\ITurnManager.cs"/>
         <Compile Include="Core\ITurnManagerFactory.cs"/>
+        <Compile Include="Core\Level.cs"/>
         <Compile Include="Core\Partnership.cs"/>
         <Compile Include="Core\Phase.cs"/>
         <Compile Include="Core\Rank.cs"/>

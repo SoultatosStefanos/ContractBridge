@@ -4,7 +4,7 @@ namespace ContractBridge.Core
 {
     public interface IBid
     {
-        byte Level { get; }
+        Level Level { get; }
 
         Denomination Denomination { get; }
     }
