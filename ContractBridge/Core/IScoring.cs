@@ -4,9 +4,9 @@ namespace ContractBridge.Core
     {
         IBoard Board { get; }
 
-        IScoringStrategy ScoringStrategy { get; set; }
+        IScoringStrategy? ScoringStrategy { get; set; }
 
-        IContract Contract { get; set; }
+        IContract? Contract { get; set; }
 
         int ForDeclarer();
     }

@@ -18,7 +18,7 @@ namespace ContractBridge.Core
 
         IEnumerable<IBid> AllBids { get; }
 
-        IContract FinalContract { get; }
+        IContract? FinalContract { get; }
 
         IContractFactory ContractFactory { get; }
 
