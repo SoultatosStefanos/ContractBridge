@@ -1,13 +1,9 @@
+using System;
+
 namespace ContractBridge.Core
 {
     public interface ITurnManager
     {
-        delegate void LeadSetHandler(ITurnManager manager, Seat lead);
-
-        delegate void RestartHandler(ITurnManager manager);
-
-        delegate void TurnChangeHandler(ITurnManager manager, ITurn turn);
-
         Seat? Lead { get; set; }
 
         ITurnFactory TurnFactory { get; }
@@ -16,10 +12,46 @@ namespace ContractBridge.Core
 
         void Restart();
 
-        event LeadSetHandler LeadSet;
+        event EventHandler<LeadEventArgs> LeadSet;
 
-        event TurnChangeHandler TurnChanged;
+        event EventHandler<TurnEventArgs> TurnChanged;
 
-        event RestartHandler Restarted;
+        event EventHandler<RestartEventArgs> Restarted;
+
+        public sealed class LeadEventArgs : EventArgs
+        {
+            public LeadEventArgs(ITurnManager turnManager, Seat seat)
+            {
+                TurnManager = turnManager;
+                Seat = seat;
+            }
+
+            public ITurnManager TurnManager { get; }
+
+            public Seat Seat { get; }
+        }
+
+        public sealed class TurnEventArgs : EventArgs
+        {
+            public TurnEventArgs(ITurnManager turnManager, ITurn turn)
+            {
+                TurnManager = turnManager;
+                Turn = turn;
+            }
+
+            public ITurnManager TurnManager { get; }
+
+            public ITurn Turn { get; }
+        }
+
+        public sealed class RestartEventArgs : EventArgs
+        {
+            public RestartEventArgs(ITurnManager turnManager)
+            {
+                TurnManager = turnManager;
+            }
+
+            public ITurnManager TurnManager { get; }
+        }
     }
 }

@@ -1,19 +1,10 @@
+using System;
 using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
     public interface IAuction
     {
-        delegate void CalledHandler(IAuction auction, IBid bid, ITurn turn);
-
-        delegate void DoubledHandler(IAuction auction, ITurn turn);
-
-        delegate void FinalContractMadeHandler(IAuction auction, IContract contract);
-
-        delegate void PassedHandler(IAuction auction, ITurn turn);
-
-        delegate void RedoubledHandler(IAuction auction, ITurn turn);
-
         IBoard Board { get; }
 
         IEnumerable<IBid> AllBids { get; }
@@ -38,14 +29,82 @@ namespace ContractBridge.Core
 
         void Redouble(ITurn turn);
 
-        event CalledHandler Called;
+        event EventHandler<CallEventArgs> Called;
 
-        event PassedHandler Passed;
+        event EventHandler<PassEventArgs> Passed;
 
-        event DoubledHandler Doubled;
+        event EventHandler<DoubleEventArgs> Doubled;
 
-        event RedoubledHandler Redoubled;
+        event EventHandler<RedoubleEventArgs> Redoubled;
 
-        event FinalContractMadeHandler FinalContractMade;
+        event EventHandler<ContractEventArgs> FinalContractMade;
+
+        public sealed class CallEventArgs : EventArgs
+        {
+            public CallEventArgs(IAuction auction, IBid bid, ITurn turn)
+            {
+                Auction = auction;
+                Bid = bid;
+                Turn = turn;
+            }
+
+            public IAuction Auction { get; }
+
+            public IBid Bid { get; }
+
+            public ITurn Turn { get; }
+        }
+
+        public sealed class PassEventArgs : EventArgs
+        {
+            public PassEventArgs(IAuction auction, ITurn turn)
+            {
+                Auction = auction;
+                Turn = turn;
+            }
+
+            public IAuction Auction { get; }
+
+            public ITurn Turn { get; }
+        }
+
+        public sealed class DoubleEventArgs : EventArgs
+        {
+            public DoubleEventArgs(IAuction auction, ITurn turn)
+            {
+                Auction = auction;
+                Turn = turn;
+            }
+
+            public IAuction Auction { get; }
+
+            public ITurn Turn { get; }
+        }
+
+        public sealed class RedoubleEventArgs : EventArgs
+        {
+            public RedoubleEventArgs(IAuction auction, ITurn turn)
+            {
+                Auction = auction;
+                Turn = turn;
+            }
+
+            public IAuction Auction { get; }
+
+            public ITurn Turn { get; }
+        }
+
+        public sealed class ContractEventArgs : EventArgs
+        {
+            public ContractEventArgs(IAuction auction, IContract contract)
+            {
+                Auction = auction;
+                Contract = contract;
+            }
+
+            public IAuction Auction { get; }
+
+            public IContract Contract { get; }
+        }
     }
 }

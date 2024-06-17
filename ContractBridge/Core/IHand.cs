@@ -1,27 +1,67 @@
+using System;
+
 namespace ContractBridge.Core
 {
     public interface IHand : ICardCollection
     {
-        public delegate void AddHandler(IHand hand, ICard card);
-
-        public delegate void ClearHandler(IHand hand, ICard card);
-
-        public delegate void EmptyHandler(IHand hand, ICard card);
-
-        public delegate void RemoveHandler(IHand hand, ICard card);
-
         void Add(ICard card);
 
         void Remove(ICard card);
 
         void Clear();
 
-        event AddHandler Added;
+        event EventHandler<AddEventArgs> Added;
 
-        event RemoveHandler Removed;
+        event EventHandler<RemoveEventArgs> Removed;
 
-        event ClearHandler Cleared;
+        event EventHandler<ClearEventArgs> Cleared;
 
-        event EmptyHandler Emptied;
+        event EventHandler<EmptyEventArgs> Emptied;
+
+        public sealed class AddEventArgs : EventArgs
+        {
+            public AddEventArgs(IHand hand, ICard card)
+            {
+                Hand = hand;
+                Card = card;
+            }
+
+            public IHand Hand { get; }
+
+            public ICard Card { get; }
+        }
+
+        public sealed class RemoveEventArgs : EventArgs
+        {
+            public RemoveEventArgs(IHand hand, ICard card)
+            {
+                Hand = hand;
+                Card = card;
+            }
+
+            public IHand Hand { get; }
+
+            public ICard Card { get; }
+        }
+
+        public sealed class ClearEventArgs : EventArgs
+        {
+            public ClearEventArgs(IHand hand)
+            {
+                Hand = hand;
+            }
+
+            public IHand Hand { get; }
+        }
+
+        public sealed class EmptyEventArgs : EventArgs
+        {
+            public EmptyEventArgs(IHand hand)
+            {
+                Hand = hand;
+            }
+
+            public IHand Hand { get; }
+        }
     }
 }

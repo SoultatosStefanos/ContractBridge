@@ -1,9 +1,9 @@
+using System;
+
 namespace ContractBridge.Core
 {
     public interface ISession
     {
-        delegate void PhaseChangeHandler(ISession session, Phase phase);
-
         Phase Phase { get; }
 
         IDeck Deck { get; }
@@ -24,6 +24,19 @@ namespace ContractBridge.Core
 
         IScoring? Scoring { get; }
 
-        event PhaseChangeHandler PhaseChanged;
+        event EventHandler<PhaseEventArgs> PhaseChanged;
+
+        public sealed class PhaseEventArgs : EventArgs
+        {
+            public PhaseEventArgs(ISession session, Phase phase)
+            {
+                Session = session;
+                Phase = phase;
+            }
+
+            public ISession Session { get; }
+
+            public Phase Phase { get; }
+        }
     }
 }

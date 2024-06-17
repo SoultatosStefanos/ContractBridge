@@ -4,10 +4,6 @@ namespace ContractBridge.Core
 {
     public interface IBoard
     {
-        delegate void DealerSetHandler(IBoard board, Seat seat);
-
-        delegate void VulnerabilitySetHandler(IBoard board, Vulnerability vulnerability);
-
         Seat? Dealer { get; set; }
 
         Vulnerability? Vulnerability { get; set; }
@@ -28,9 +24,35 @@ namespace ContractBridge.Core
 
         (IHand hand1, IHand hand2, IHand hand3) OtherHands(IHand hand);
 
-        event DealerSetHandler DealerSet;
+        event EventHandler<DealerEventArgs> DealerSet;
 
-        event VulnerabilitySetHandler VulnerabilitySet;
+        event EventHandler<VulnerabilityEventArgs> VulnerabilitySet;
+
+        public sealed class DealerEventArgs : EventArgs
+        {
+            public DealerEventArgs(IBoard board, Seat dealer)
+            {
+                Board = board;
+                Dealer = dealer;
+            }
+
+            public IBoard Board { get; }
+
+            public Seat Dealer { get; }
+        }
+
+        public sealed class VulnerabilityEventArgs : EventArgs
+        {
+            public VulnerabilityEventArgs(IBoard board, Vulnerability vulnerability)
+            {
+                Board = board;
+                Vulnerability = vulnerability;
+            }
+
+            public IBoard Board { get; }
+
+            public Vulnerability Vulnerability { get; }
+        }
     }
 
     public static class BoardExtensions

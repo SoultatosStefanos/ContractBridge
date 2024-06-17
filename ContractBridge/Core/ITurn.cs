@@ -1,15 +1,25 @@
+using System;
+
 namespace ContractBridge.Core
 {
     public interface ITurn
     {
-        delegate void MarkPlayedHandler(ITurn turn);
-
         Seat Seat { get; }
 
         bool IsPlayed();
 
         void MarkPlayed();
 
-        event MarkPlayedHandler MarkedPlayed;
+        event EventHandler<PlayedEventArgs> MarkedPlayed;
+
+        public sealed class PlayedEventArgs : EventArgs
+        {
+            public PlayedEventArgs(ITurn turn)
+            {
+                Turn = turn;
+            }
+
+            public ITurn Turn { get; }
+        }
     }
 }
