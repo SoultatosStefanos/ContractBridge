@@ -2,7 +2,7 @@ using System;
 
 namespace ContractBridge.Core
 {
-    public interface ITurnManager
+    public interface ITurnSequence
     {
         Seat? Lead { get; set; }
 
@@ -18,38 +18,38 @@ namespace ContractBridge.Core
 
         public sealed class LeadEventArgs : EventArgs
         {
-            public LeadEventArgs(ITurnManager turnManager, Seat seat)
+            public LeadEventArgs(ITurnSequence turnSequence, Seat seat)
             {
-                TurnManager = turnManager;
+                TurnSequence = turnSequence;
                 Seat = seat;
             }
 
-            public ITurnManager TurnManager { get; }
+            public ITurnSequence TurnSequence { get; }
 
             public Seat Seat { get; }
         }
 
         public sealed class TurnEventArgs : EventArgs
         {
-            public TurnEventArgs(ITurnManager turnManager, ITurn turn)
+            public TurnEventArgs(ITurnSequence turnSequence, ITurn turn)
             {
-                TurnManager = turnManager;
+                TurnSequence = turnSequence;
                 Turn = turn;
             }
 
-            public ITurnManager TurnManager { get; }
+            public ITurnSequence TurnSequence { get; }
 
             public ITurn Turn { get; }
         }
 
         public sealed class RestartEventArgs : EventArgs
         {
-            public RestartEventArgs(ITurnManager turnManager)
+            public RestartEventArgs(ITurnSequence turnSequence)
             {
-                TurnManager = turnManager;
+                TurnSequence = turnSequence;
             }
 
-            public ITurnManager TurnManager { get; }
+            public ITurnSequence TurnSequence { get; }
         }
     }
 }

@@ -1,7 +1,7 @@
-namespace ContractBridge.Core
+namespace ContractBridge.Core.Impl
 {
     public interface ISessionFactory
     {
-        ISession Create(IDeck deck, IBoard board, ITurnManager turnManager);
+        ISession Create(IDeck deck, IBoard board, ITurnSequence turnSequence);
     }
 }

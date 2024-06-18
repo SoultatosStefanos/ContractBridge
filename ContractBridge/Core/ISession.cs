@@ -10,7 +10,7 @@ namespace ContractBridge.Core
 
         IBoard Board { get; }
 
-        ITurnManager TurnManager { get; }
+        ITurnSequence TurnSequence { get; }
 
         IAuction? Auction { get; }
 

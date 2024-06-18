@@ -1,4 +1,4 @@
-namespace ContractBridge.Core
+namespace ContractBridge.Core.Impl
 {
     public interface IBidFactory
     {
