@@ -18,7 +18,11 @@ namespace ContractBridge.Core
 
         IScoring? Scoring { get; }
 
+        void Replay();
+
         event EventHandler<PhaseEventArgs> PhaseChanged;
+
+        event EventHandler<ReplayEventArgs> Replayed;
 
         public sealed class PhaseEventArgs : EventArgs
         {
@@ -31,6 +35,16 @@ namespace ContractBridge.Core
             public ISession Session { get; }
 
             public Phase Phase { get; }
+        }
+
+        public sealed class ReplayEventArgs : EventArgs
+        {
+            public ReplayEventArgs(ISession session)
+            {
+                Session = session;
+            }
+
+            public ISession Session { get; }
         }
     }
 }

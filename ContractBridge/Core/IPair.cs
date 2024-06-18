@@ -5,6 +5,8 @@ namespace ContractBridge.Core
 {
     public interface IPair
     {
+        int Score { get; set; }
+
         Partnership Partnership { get; }
 
         IEnumerable<ITrick> AllTricksWon { get; }
@@ -12,6 +14,8 @@ namespace ContractBridge.Core
         void WinTrick(ITrick trick);
 
         event EventHandler<TrickEventArgs> TrickWon;
+
+        event EventHandler<ScoreEventArgs> Scored;
 
         public sealed class TrickEventArgs : EventArgs
         {
@@ -24,6 +28,19 @@ namespace ContractBridge.Core
             public IPair Pair { get; }
 
             public ITrick Trick { get; }
+        }
+
+        public sealed class ScoreEventArgs : EventArgs
+        {
+            public ScoreEventArgs(IPair pair, int score)
+            {
+                Pair = pair;
+                Score = score;
+            }
+
+            public IPair Pair { get; }
+
+            public int Score { get; }
         }
     }
 }
