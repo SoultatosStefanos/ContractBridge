@@ -6,6 +6,6 @@ namespace ContractBridge.Core
 
         IContract? Contract { get; set; }
 
-        int Score();
+        int DeclarerScore();
     }
 }

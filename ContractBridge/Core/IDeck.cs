@@ -4,8 +4,6 @@ namespace ContractBridge.Core
 {
     public interface IDeck : ICardCollection
     {
-        ICardFactory CardFactory { get; }
-
         void Shuffle();
 
         void Deal(IBoard board);

@@ -11,8 +11,6 @@ namespace ContractBridge.Core
 
         IContract? FinalContract { get; }
 
-        IContractFactory ContractFactory { get; }
-
         bool CanCall(IBid bid, ITurn turn);
 
         bool CanPass(ITurn turn);

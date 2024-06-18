@@ -6,8 +6,6 @@ namespace ContractBridge.Core
     {
         Seat? Lead { get; set; }
 
-        ITurnFactory TurnFactory { get; }
-
         ITurn? NextTurn();
 
         void Restart();

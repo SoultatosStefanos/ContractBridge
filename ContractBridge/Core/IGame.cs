@@ -9,8 +9,6 @@ namespace ContractBridge.Core
 
         IEnumerable<ICard> AllPlayedCards { get; }
 
-        ITrickFactory TrickFactory { get; }
-
         bool CanFollow(ICard card, ITurn turn);
 
         bool CanFollow(ITurn turn);

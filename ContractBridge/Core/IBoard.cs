@@ -8,10 +8,6 @@ namespace ContractBridge.Core
 
         Vulnerability? Vulnerability { get; set; }
 
-        IPairFactory PairFactory { get; }
-
-        IHandFactory HandFactory { get; }
-
         IPair Pair(Seat seat);
 
         IPair OtherPair(Seat seat);

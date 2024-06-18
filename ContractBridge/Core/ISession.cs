@@ -12,12 +12,6 @@ namespace ContractBridge.Core
 
         ITurnManager TurnManager { get; }
 
-        IAuctionFactory AuctionFactory { get; }
-
-        IGameFactory GameFactory { get; }
-
-        IScoringFactory ScoringFactory { get; }
-
         IAuction? Auction { get; }
 
         IGame? Game { get; }
