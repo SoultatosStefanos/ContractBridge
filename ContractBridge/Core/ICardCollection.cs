@@ -8,6 +8,8 @@ namespace ContractBridge.Core
 
         ICard this[int index] { get; }
 
+        ICard this[Rank rank, Suit suit] { get; }
+
         bool IsEmpty();
 
         bool Contains(ICard card);

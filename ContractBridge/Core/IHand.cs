@@ -2,6 +2,10 @@ using System;
 
 namespace ContractBridge.Core
 {
+    public class CardAlreadyInHandException : Exception
+    {
+    }
+
     public interface IHand : ICardCollection
     {
         void Add(ICard card);
@@ -14,54 +18,28 @@ namespace ContractBridge.Core
 
         event EventHandler<RemoveEventArgs> Removed;
 
-        event EventHandler<ClearEventArgs> Cleared;
+        event EventHandler Cleared;
 
-        event EventHandler<EmptyEventArgs> Emptied;
+        event EventHandler Emptied;
 
         public sealed class AddEventArgs : EventArgs
         {
-            public AddEventArgs(IHand hand, ICard card)
+            public AddEventArgs(ICard card)
             {
-                Hand = hand;
                 Card = card;
             }
-
-            public IHand Hand { get; }
 
             public ICard Card { get; }
         }
 
         public sealed class RemoveEventArgs : EventArgs
         {
-            public RemoveEventArgs(IHand hand, ICard card)
+            public RemoveEventArgs(ICard card)
             {
-                Hand = hand;
                 Card = card;
             }
 
-            public IHand Hand { get; }
-
             public ICard Card { get; }
-        }
-
-        public sealed class ClearEventArgs : EventArgs
-        {
-            public ClearEventArgs(IHand hand)
-            {
-                Hand = hand;
-            }
-
-            public IHand Hand { get; }
-        }
-
-        public sealed class EmptyEventArgs : EventArgs
-        {
-            public EmptyEventArgs(IHand hand)
-            {
-                Hand = hand;
-            }
-
-            public IHand Hand { get; }
         }
     }
 }

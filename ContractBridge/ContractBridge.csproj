@@ -51,9 +51,14 @@
         <Compile Include="Core\IDeck.cs"/>
         <Compile Include="Core\IGame.cs"/>
         <Compile Include="Core\IHand.cs"/>
+        <Compile Include="Core\Impl\Board.cs"/>
+        <Compile Include="Core\Impl\BoardFactory.cs"/>
         <Compile Include="Core\Impl\Card.cs"/>
         <Compile Include="Core\Impl\CardFactory.cs"/>
         <Compile Include="Core\Impl\Deck.cs"/>
+        <Compile Include="Core\Impl\DeckFactory.cs"/>
+        <Compile Include="Core\Impl\Hand.cs"/>
+        <Compile Include="Core\Impl\HandFactory.cs"/>
         <Compile Include="Core\Impl\IAuctionFactory.cs"/>
         <Compile Include="Core\Impl\IBidFactory.cs"/>
         <Compile Include="Core\Impl\IBoardFactory.cs"/>

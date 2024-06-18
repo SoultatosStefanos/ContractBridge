@@ -5,5 +5,8 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=61900ca4_002D7a47_002D47eb_002D880f_002D708e8b3fa18a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="DeckTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.DeckTest&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.SeatExtensionsTest&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.HandTest&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.BoardTest&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

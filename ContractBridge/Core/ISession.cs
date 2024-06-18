@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
@@ -17,6 +18,14 @@ namespace ContractBridge.Core
         IGame? Game { get; }
 
         IScoring? Scoring { get; }
+
+        IEnumerable<IPair> Pairs { get; }
+
+        IPair Pair(Seat seat);
+
+        IPair OtherPair(Seat seat);
+
+        IPair OtherPair(IPair pair);
 
         void Replay();
 

@@ -24,14 +24,15 @@ namespace ContractBridge.Core.Impl
 
         public Deck(ICardFactory cardFactory)
         {
-            _cards = GenerateAllCardCombinations(cardFactory).ToArray();
+            _cards = GenerateAllCardCombinations().ToArray();
+
             return;
 
-            IEnumerable<ICard> GenerateAllCardCombinations(ICardFactory factory)
+            IEnumerable<ICard> GenerateAllCardCombinations()
             {
                 return from rank in Enum.GetValues(typeof(Rank)).Cast<Rank>()
                     from suit in Enum.GetValues(typeof(Suit)).Cast<Suit>()
-                    select factory.Create(rank, suit);
+                    select cardFactory.Create(rank, suit);
             }
         }
 
@@ -47,7 +48,9 @@ namespace ContractBridge.Core.Impl
 
         public int Count => _cards.Length;
 
-        public ICard this[int index] => Get(index);
+        public ICard this[int index] => _cards[index];
+
+        public ICard this[Rank rank, Suit suit] => _cards.First(c => c.Rank == rank && c.Suit == suit);
 
         public bool IsEmpty()
         {
@@ -62,26 +65,74 @@ namespace ContractBridge.Core.Impl
         public void Shuffle(Random rng)
         {
             rng.Shuffle(_cards);
-            Shuffled?.Invoke(this, EventArgs.Empty);
+
+            RaiseShuffledEvent();
         }
 
-        public void Deal(IBoard board) // TODO
+        public void Deal(IBoard board)
         {
-            throw new NotImplementedException();
+            if (board.Dealer is { } dealerValue)
+            {
+                ClearBoardHands();
+                DealBoardHands();
+
+                RaiseDealtEvent(board);
+            }
+            else
+            {
+                throw new DealerNotSetException();
+            }
+
+            return;
+
+            void ClearBoardHands()
+            {
+                foreach (var hand in board.Hands)
+                {
+                    hand.Clear();
+                }
+            }
+
+            void DealBoardHands()
+            {
+                _cards.Aggregate(dealerValue, (currentSeat, card) =>
+                {
+                    var nextSeat = currentSeat.NextSeat();
+                    board.Hand(nextSeat).Add(card);
+                    return nextSeat;
+                });
+            }
         }
 
         public event EventHandler<IDeck.DealEventArgs>? Dealt;
 
         public event EventHandler? Shuffled;
 
-        private ICard Get(int index)
+        private bool Equals(Deck other)
         {
-            if (index < 0 || index >= Count)
-            {
-                throw new IndexOutOfRangeException($"Card index {index} is out of range.");
-            }
+            return _cards.Equals(other._cards);
+        }
 
-            return _cards[index];
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == GetType() && Equals((Deck)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _cards.GetHashCode();
+        }
+
+        private void RaiseDealtEvent(IBoard board)
+        {
+            Dealt?.Invoke(this, new IDeck.DealEventArgs(board));
+        }
+
+        private void RaiseShuffledEvent()
+        {
+            Shuffled?.Invoke(this, EventArgs.Empty);
         }
     }
 }

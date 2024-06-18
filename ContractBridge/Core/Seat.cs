@@ -14,12 +14,17 @@ namespace ContractBridge.Core
     {
         public static Seat NextSeat(this Seat seat)
         {
-            throw new NotImplementedException(); // TODO
+            return (Seat)((int)(seat + 1) % SeatCount());
         }
 
         public static Seat Partner(this Seat seat)
         {
-            throw new NotImplementedException(); // TODO
+            return (Seat)((int)(seat + 2) % SeatCount());
+        }
+
+        private static int SeatCount()
+        {
+            return Enum.GetNames(typeof(Seat)).Length;
         }
     }
 }

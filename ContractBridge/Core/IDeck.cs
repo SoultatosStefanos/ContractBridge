@@ -2,6 +2,10 @@ using System;
 
 namespace ContractBridge.Core
 {
+    public class DealerNotSetException : Exception
+    {
+    }
+
     public interface IDeck : ICardCollection
     {
         void Shuffle(Random rng);

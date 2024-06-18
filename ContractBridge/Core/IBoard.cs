@@ -1,24 +1,25 @@
 using System;
+using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
+    public class UnknownHandException : Exception
+    {
+    }
+
     public interface IBoard
     {
         Seat? Dealer { get; set; }
 
         Vulnerability? Vulnerability { get; set; }
 
-        IPair Pair(Seat seat);
-
-        IPair OtherPair(Seat seat);
-
-        IPair OtherPair(IPair pair);
+        IEnumerable<IHand> Hands { get; }
 
         IHand Hand(Seat seat);
 
-        (IHand hand1, IHand hand2, IHand hand3) OtherHands(Seat seat);
+        IEnumerable<IHand> OtherHands(Seat seat);
 
-        (IHand hand1, IHand hand2, IHand hand3) OtherHands(IHand hand);
+        IEnumerable<IHand> OtherHands(IHand hand);
 
         event EventHandler<DealerEventArgs> DealerSet;
 
@@ -26,26 +27,20 @@ namespace ContractBridge.Core
 
         public sealed class DealerEventArgs : EventArgs
         {
-            public DealerEventArgs(IBoard board, Seat dealer)
+            public DealerEventArgs(Seat dealer)
             {
-                Board = board;
                 Dealer = dealer;
             }
-
-            public IBoard Board { get; }
 
             public Seat Dealer { get; }
         }
 
         public sealed class VulnerabilityEventArgs : EventArgs
         {
-            public VulnerabilityEventArgs(IBoard board, Vulnerability vulnerability)
+            public VulnerabilityEventArgs(Vulnerability vulnerability)
             {
-                Board = board;
                 Vulnerability = vulnerability;
             }
-
-            public IBoard Board { get; }
 
             public Vulnerability Vulnerability { get; }
         }
@@ -55,7 +50,19 @@ namespace ContractBridge.Core
     {
         public static bool IsVulnerable(this IBoard board, Seat seat)
         {
-            throw new NotImplementedException(); // TODO
+            var vulnerability = board.Vulnerability;
+
+            if (vulnerability == Vulnerability.All)
+            {
+                return true;
+            }
+
+            return seat switch
+            {
+                Seat.East or Seat.West => vulnerability == Vulnerability.EastWest,
+                Seat.North or Seat.South => vulnerability == Vulnerability.NorthSouth,
+                _ => false
+            };
         }
     }
 }

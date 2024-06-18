@@ -14,12 +14,13 @@ namespace ContractBridge.Tests.Core.Impl
         [SetUp]
         public void SetUp()
         {
-            _deck = new Deck(_cardFactory);
+            _deck = new Deck(new CardFactory());
+            _board = new Board(new HandFactory());
         }
 
-        private readonly ICardFactory _cardFactory = new CardFactory();
+        private Deck _deck;
 
-        private IDeck _deck;
+        private IBoard _board;
 
         [Test]
         public void CountIs52()
@@ -61,11 +62,20 @@ namespace ContractBridge.Tests.Core.Impl
 
             Assert.Multiple(() =>
             {
-                Assert.That(_cardFactory.Create((Rank)2, Suit.Clubs), Is.EqualTo(card0));
-                Assert.That(_cardFactory.Create((Rank)2, Suit.Diamonds), Is.EqualTo(card1));
-                Assert.That(_cardFactory.Create(Rank.Two, Suit.Hearts), Is.EqualTo(card2));
-                Assert.That(_cardFactory.Create(Rank.Two, Suit.Spades), Is.EqualTo(card3));
+                Assert.That(new Card((Rank)2, Suit.Clubs), Is.EqualTo(card0));
+                Assert.That(new Card((Rank)2, Suit.Diamonds), Is.EqualTo(card1));
+                Assert.That(new Card(Rank.Two, Suit.Hearts), Is.EqualTo(card2));
+                Assert.That(new Card(Rank.Two, Suit.Spades), Is.EqualTo(card3));
             });
+        }
+
+        [Test]
+        public void AccessingBySuitAndRank()
+        {
+            var card = _deck[Rank.Ace, Suit.Clubs];
+
+            Assert.That(card.Rank, Is.EqualTo(Rank.Ace));
+            Assert.That(card.Suit, Is.EqualTo(Suit.Clubs));
         }
 
         [Test]
@@ -99,12 +109,76 @@ namespace ContractBridge.Tests.Core.Impl
             Assert.That(eventRaised, Is.True);
         }
 
-        // TODO Test Deal
+        [Test]
+        public void DealThrowsDealerNotSetExceptionWithoutDealer()
+        {
+            Assert.Throws<DealerNotSetException>(() => { _deck.Deal(_board); });
+        }
+
+        [Test]
+        public void DealWithEmptyBoard()
+        {
+            _board.Dealer = Seat.East;
+
+            _deck.Deal(_board);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_board.Hand(Seat.West).Count, Is.EqualTo(13));
+                Assert.That(_board.Hand(Seat.East).Count, Is.EqualTo(13));
+                Assert.That(_board.Hand(Seat.North).Count, Is.EqualTo(13));
+                Assert.That(_board.Hand(Seat.South).Count, Is.EqualTo(13));
+
+                Assert.That(ContainsDuplicates(_board.Hands), Is.False);
+            });
+        }
+
+        [Test]
+        public void DealWithNonEmptyBoard()
+        {
+            _board.Dealer = Seat.East;
+
+            _board.Hand(Seat.West).Add(new Card(Rank.Ace, Suit.Clubs));
+            _board.Hand(Seat.East).Add(new Card(Rank.Two, Suit.Clubs));
+            _board.Hand(Seat.South).Add(new Card(Rank.Four, Suit.Diamonds));
+            _board.Hand(Seat.South).Add(new Card(Rank.Five, Suit.Diamonds));
+
+            _deck.Deal(_board);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_board.Hand(Seat.West).Count, Is.EqualTo(13));
+                Assert.That(_board.Hand(Seat.East).Count, Is.EqualTo(13));
+                Assert.That(_board.Hand(Seat.North).Count, Is.EqualTo(13));
+                Assert.That(_board.Hand(Seat.South).Count, Is.EqualTo(13));
+
+                Assert.That(ContainsDuplicates(_board.Hands), Is.False);
+            });
+        }
+
+        [Test]
+        public void DealRaisedDealtEvent()
+        {
+            var eventRaised = false;
+
+            _deck.Dealt += (sender, args) => eventRaised = true;
+
+            _board.Dealer = Seat.West;
+
+            _deck.Deal(_board);
+
+            Assert.That(eventRaised, Is.True);
+        }
 
         private bool ContainsDuplicates()
         {
-            var set = new HashSet<ICard>();
-            return _deck.Any(card => !set.Add(card));
+            return ContainsDuplicates(_deck);
+        }
+
+        private static bool ContainsDuplicates<T>(IEnumerable<T> enumerable)
+        {
+            var set = new HashSet<T>();
+            return enumerable.Any(x => !set.Add(x));
         }
     }
 }
