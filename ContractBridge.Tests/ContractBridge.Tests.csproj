@@ -135,6 +135,8 @@
         <Compile Include="Core\Impl\BoardTest.cs"/>
         <Compile Include="Core\Impl\DeckTest.cs"/>
         <Compile Include="Core\Impl\HandTest.cs"/>
+        <Compile Include="Core\Impl\TurnSequenceTest.cs"/>
+        <Compile Include="Core\Impl\TurnTest.cs"/>
         <Compile Include="Core\SeatExtensionsTest.cs"/>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>

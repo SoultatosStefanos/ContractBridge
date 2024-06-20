@@ -2,6 +2,10 @@ using System;
 
 namespace ContractBridge.Core
 {
+    public class TurnAlreadyPlayedException : Exception
+    {
+    }
+
     public interface ITurn
     {
         Seat Seat { get; }
@@ -10,16 +14,6 @@ namespace ContractBridge.Core
 
         void MarkPlayed();
 
-        event EventHandler<PlayedEventArgs> MarkedPlayed;
-
-        public sealed class PlayedEventArgs : EventArgs
-        {
-            public PlayedEventArgs(ITurn turn)
-            {
-                Turn = turn;
-            }
-
-            public ITurn Turn { get; }
-        }
+        event EventHandler MarkedPlayed;
     }
 }

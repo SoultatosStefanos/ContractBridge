@@ -14,42 +14,29 @@ namespace ContractBridge.Core
 
         event EventHandler<TurnEventArgs> TurnChanged;
 
-        event EventHandler<RestartEventArgs> Restarted;
+        event EventHandler Restarted;
 
         public sealed class LeadEventArgs : EventArgs
         {
-            public LeadEventArgs(ITurnSequence turnSequence, Seat seat)
+            public LeadEventArgs(Seat seat)
             {
-                TurnSequence = turnSequence;
                 Seat = seat;
             }
-
-            public ITurnSequence TurnSequence { get; }
 
             public Seat Seat { get; }
         }
 
         public sealed class TurnEventArgs : EventArgs
         {
-            public TurnEventArgs(ITurnSequence turnSequence, ITurn turn)
+            public TurnEventArgs(ITurn turn)
             {
-                TurnSequence = turnSequence;
                 Turn = turn;
             }
 
-            public ITurnSequence TurnSequence { get; }
 
             public ITurn Turn { get; }
         }
 
-        public sealed class RestartEventArgs : EventArgs
-        {
-            public RestartEventArgs(ITurnSequence turnSequence)
-            {
-                TurnSequence = turnSequence;
-            }
-
-            public ITurnSequence TurnSequence { get; }
-        }
+      
     }
 }
