@@ -12,7 +12,12 @@ namespace ContractBridge.Core
     {
         public static Partnership Partnership(this Seat seat)
         {
-            throw new NotImplementedException(); // TODO
+            return seat switch
+            {
+                Seat.East or Seat.West => Core.Partnership.EastWest,
+                Seat.North or Seat.South => Core.Partnership.NorthSouth,
+                _ => throw new ArgumentOutOfRangeException(nameof(seat), seat, null)
+            };
         }
     }
 }

@@ -11,10 +11,6 @@ namespace ContractBridge.Core
     {
     }
 
-    public class AuctionPlayAgainstSelfException : InvalidAuctionPlayException
-    {
-    }
-
     public class AuctionCallTooLowException : InvalidAuctionPlayException
     {
     }

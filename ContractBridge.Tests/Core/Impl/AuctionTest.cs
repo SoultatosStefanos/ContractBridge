@@ -80,62 +80,6 @@ namespace ContractBridge.Tests.Core.Impl
         }
 
         [Test]
-        public void CantCallSelf()
-        {
-            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.East));
-
-            Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.Spades), new Turn(Seat.East)), Is.False);
-
-            // Assert.Throws<AuctionPlayAgainstSelfException>(() =>
-            // {
-            //     _auction.Call(new Bid(Level.Four, Denomination.Spades), new Turn(Seat.East));
-            // });
-        }
-
-        [Test]
-        public void CantPassOnSelf()
-        {
-            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.East));
-
-            Assert.That(_auction.CanPass(new Turn(Seat.East)), Is.False);
-        }
-
-        [Test]
-        public void CantDoubleOnSelf()
-        {
-            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.East));
-
-            Assert.That(_auction.CanDouble(new Turn(Seat.East)), Is.False);
-        }
-
-        [Test]
-        public void CallOnSelfThrowsAuctionPlayAgainstSelfException()
-        {
-            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.East));
-
-            Assert.Throws<AuctionPlayAgainstSelfException>(() =>
-            {
-                _auction.Call(new Bid(Level.Four, Denomination.Spades), new Turn(Seat.East));
-            });
-        }
-
-        [Test]
-        public void PassOnSelfThrowsAuctionPlayAgainstSelfException()
-        {
-            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.East));
-
-            Assert.Throws<AuctionPlayAgainstSelfException>(() => { _auction.Pass(new Turn(Seat.East)); });
-        }
-
-        [Test]
-        public void DoubleOnSelfThrowsAuctionPlayAgainstSelfException()
-        {
-            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.East));
-
-            Assert.Throws<AuctionPlayAgainstSelfException>(() => { _auction.Double(new Turn(Seat.East)); });
-        }
-
-        [Test]
         public void CantCallWithLowerOrSameDenomination()
         {
             _auction.Call(new Bid(Level.One, Denomination.NoTrumps), new Turn(Seat.East));

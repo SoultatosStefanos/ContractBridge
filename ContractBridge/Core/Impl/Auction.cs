@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace ContractBridge.Core.Impl
@@ -97,14 +96,9 @@ namespace ContractBridge.Core.Impl
                 return false;
             }
 
-            if (LastBidEntry() is not var (lastBid, lastBidSeat, _)) // Entry call.
+            if (LastBidEntry() is not var (lastBid, _, _)) // Entry call.
             {
                 return true;
-            }
-
-            if (lastBidSeat == turn.Seat)
-            {
-                return false;
             }
 
             return !IsCallTooLow(bid, lastBid);
@@ -117,12 +111,7 @@ namespace ContractBridge.Core.Impl
                 return false;
             }
 
-            if (LastBidEntry() is not var (_, lastBidSeat, _)) // Entry pass.
-            {
-                return true;
-            }
-
-            return lastBidSeat != turn.Seat;
+            return LastBidEntry() == null || true; // Entry pass.
         }
 
         public bool CanDouble(ITurn turn)
@@ -132,31 +121,24 @@ namespace ContractBridge.Core.Impl
                 return false;
             }
 
-            if (LastBidEntry() is { } lastBidEntry)
-            {
-                var (_, lastBidSeat, _) = lastBidEntry;
-
-                if (lastBidSeat == turn.Seat)
-                {
-                    return lastBidEntry.IsDoubled(); // Redouble.
-                }
-
-                if (lastBidSeat == turn.Seat.Partner())
-                {
-                    return lastBidEntry.IsDoubled(); // Redouble.
-                }
-
-                if (lastBidEntry.IsDoubled())
-                {
-                    return false;
-                }
-            }
-            else
+            if (LastBidEntry() is not { } lastBidEntry)
             {
                 return false;
             }
 
-            return true;
+            var (_, lastBidSeat, _) = lastBidEntry;
+
+            if (lastBidEntry.IsRedoubled())
+            {
+                return false;
+            }
+
+            if (lastBidSeat.Partnership() == turn.Seat.Partnership())
+            {
+                return lastBidEntry.IsDoubled(); // Redouble chance.
+            }
+
+            return !lastBidEntry.IsDoubled();
         }
 
         public void Call(IBid bid, ITurn turn)
@@ -166,13 +148,8 @@ namespace ContractBridge.Core.Impl
                 throw new AuctionTurnAlreadyPlayedException();
             }
 
-            if (LastBidEntry() is var (lastBid, lastBidSeat, _))
+            if (LastBidEntry() is var (lastBid, _, _))
             {
-                if (lastBidSeat == turn.Seat)
-                {
-                    throw new AuctionPlayAgainstSelfException();
-                }
-
                 if (IsCallTooLow(bid, lastBid))
                 {
                     throw new AuctionCallTooLowException();
@@ -197,16 +174,6 @@ namespace ContractBridge.Core.Impl
 
             if (LastBidEntry() is { } lastBidEntry)
             {
-                var (_, lastBidSeat, _) = lastBidEntry;
-
-                if (lastBidSeat == turn.Seat)
-                {
-                    if (!lastBidEntry.IsDoubled() && !lastBidEntry.IsRedoubled())
-                    {
-                        throw new AuctionPlayAgainstSelfException();
-                    }
-                }
-
                 turn.MarkPlayed();
 
                 RaisePassedEvent(turn);
@@ -247,31 +214,26 @@ namespace ContractBridge.Core.Impl
 
             var (_, lastBidSeat, _) = lastBidEntry;
 
-            if (lastBidSeat == turn.Seat)
+            if (lastBidSeat.Partnership() == turn.Seat.Partnership())
             {
-                throw new AuctionPlayAgainstSelfException();
-            }
-
-            if (lastBidSeat == turn.Seat.Partner())
-            {
-                if (!lastBidEntry.IsDoubled()) // Else redouble
+                if (!lastBidEntry.IsDoubled())
                 {
                     throw new AuctionDoubleOnPartnerException();
                 }
-            }
 
-            lastBidEntry.Double(turn.Seat);
+                lastBidEntry.Double(turn.Seat);
 
-            turn.MarkPlayed();
+                turn.MarkPlayed();
 
-            if (lastBidEntry.IsDoubled())
-            {
-                RaiseDoubledEvent(turn);
+                RaiseRedoubledEvent(turn);
             }
             else
             {
-                Debug.Assert(lastBidEntry.IsRedoubled());
-                RaiseRedoubledEvent(turn);
+                lastBidEntry.Double(turn.Seat);
+
+                turn.MarkPlayed();
+
+                RaiseDoubledEvent(turn);
             }
 
             _passCount = 0;
