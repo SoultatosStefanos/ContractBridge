@@ -19,26 +19,20 @@ namespace ContractBridge.Core
 
         public sealed class TrickEventArgs : EventArgs
         {
-            public TrickEventArgs(IPair pair, ITrick trick)
+            public TrickEventArgs(ITrick trick)
             {
-                Pair = pair;
                 Trick = trick;
             }
-
-            public IPair Pair { get; }
 
             public ITrick Trick { get; }
         }
 
         public sealed class ScoreEventArgs : EventArgs
         {
-            public ScoreEventArgs(IPair pair, int score)
+            public ScoreEventArgs(int score)
             {
-                Pair = pair;
                 Score = score;
             }
-
-            public IPair Pair { get; }
 
             public int Score { get; }
         }
