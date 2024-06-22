@@ -91,11 +91,6 @@ namespace ContractBridge.Core.Impl
 
         public bool CanCall(IBid bid, ITurn turn)
         {
-            if (turn.IsPlayed())
-            {
-                return false;
-            }
-
             if (LastBidEntry() is not var (lastBid, _, _)) // Entry call.
             {
                 return true;
@@ -106,21 +101,11 @@ namespace ContractBridge.Core.Impl
 
         public bool CanPass(ITurn turn)
         {
-            if (turn.IsPlayed())
-            {
-                return false;
-            }
-
-            return LastBidEntry() == null || true; // Entry pass.
+            return true;
         }
 
         public bool CanDouble(ITurn turn)
         {
-            if (turn.IsPlayed())
-            {
-                return false;
-            }
-
             if (LastBidEntry() is not { } lastBidEntry)
             {
                 return false;
@@ -143,11 +128,6 @@ namespace ContractBridge.Core.Impl
 
         public void Call(IBid bid, ITurn turn)
         {
-            if (turn.IsPlayed())
-            {
-                throw new AuctionTurnAlreadyPlayedException();
-            }
-
             if (LastBidEntry() is var (lastBid, _, _))
             {
                 if (IsCallTooLow(bid, lastBid))
@@ -166,11 +146,6 @@ namespace ContractBridge.Core.Impl
 
         public void Pass(ITurn turn)
         {
-            if (turn.IsPlayed())
-            {
-                throw new AuctionTurnAlreadyPlayedException();
-            }
-
             turn.MarkPlayed();
             RaisePassedEvent(turn);
 
@@ -195,11 +170,6 @@ namespace ContractBridge.Core.Impl
 
         public void Double(ITurn turn)
         {
-            if (turn.IsPlayed())
-            {
-                throw new AuctionTurnAlreadyPlayedException();
-            }
-
             if (LastBidEntry() is not { } lastBidEntry)
             {
                 throw new AuctionDoubleBeforeCallException();

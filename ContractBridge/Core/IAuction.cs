@@ -7,10 +7,6 @@ namespace ContractBridge.Core
     {
     }
 
-    public class AuctionTurnAlreadyPlayedException : InvalidAuctionPlayException
-    {
-    }
-
     public class AuctionCallTooLowException : InvalidAuctionPlayException
     {
     }

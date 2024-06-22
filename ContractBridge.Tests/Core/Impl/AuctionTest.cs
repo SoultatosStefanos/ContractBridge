@@ -23,69 +23,6 @@ namespace ContractBridge.Tests.Core.Impl
         }
 
         [Test]
-        public void CantCallWithPlayedTurn()
-        {
-            var turn = new Turn(Seat.East);
-
-            turn.MarkPlayed();
-
-            Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Clubs), turn), Is.False);
-        }
-
-        [Test]
-        public void CantPassWithPlayedTurn()
-        {
-            var turn = new Turn(Seat.East);
-
-            turn.MarkPlayed();
-
-            Assert.That(_auction.CanPass(turn), Is.False);
-        }
-
-        [Test]
-        public void CantDoubleWithPlayedTurn()
-        {
-            var turn = new Turn(Seat.East);
-
-            turn.MarkPlayed();
-
-            Assert.That(_auction.CanDouble(turn), Is.False);
-        }
-
-        [Test]
-        public void CallWithPlayedTurnThrowsAuctionTurnAlreadyPlayedException()
-        {
-            var turn = new Turn(Seat.East);
-
-            turn.MarkPlayed();
-
-            Assert.Throws<AuctionTurnAlreadyPlayedException>(() =>
-            {
-                _auction.Call(new Bid(Level.One, Denomination.Clubs), turn);
-            });
-        }
-
-        [Test]
-        public void PassWithPlayedTurnThrowsAuctionTurnAlreadyPlayedException()
-        {
-            var turn = new Turn(Seat.East);
-
-            turn.MarkPlayed();
-
-            Assert.Throws<AuctionTurnAlreadyPlayedException>(() => { _auction.Pass(turn); });
-        }
-
-        [Test]
-        public void DoubleWithPlayedTurnThrowsAuctionTurnAlreadyPlayedException()
-        {
-            var turn = new Turn(Seat.East);
-
-            turn.MarkPlayed();
-
-            Assert.Throws<AuctionTurnAlreadyPlayedException>(() => { _auction.Double(turn); });
-        }
-
-        [Test]
         public void CantCallWithLowerOrSameDenomination()
         {
             _auction.Call(new Bid(Level.One, Denomination.NoTrumps), new Turn(Seat.East));
@@ -222,69 +159,6 @@ namespace ContractBridge.Tests.Core.Impl
                 _auction.Pass(new Turn(Seat.North));
                 _auction.Pass(new Turn(Seat.South));
             });
-        }
-
-        [Test]
-        public void CallThenCantCallWithSameTurn()
-        {
-            var turn = new Turn(Seat.East);
-
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), turn);
-
-            Assert.That(_auction.CanCall(new Bid(Level.Seven, Denomination.NoTrumps), turn), Is.False);
-        }
-
-        [Test]
-        public void CallThenCantPassWithSameTurn()
-        {
-            var turn = new Turn(Seat.East);
-
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), turn);
-
-            Assert.That(_auction.CanPass(turn), Is.False);
-        }
-
-        [Test]
-        public void CallThenCantDoubleWithSameTurn()
-        {
-            var turn = new Turn(Seat.East);
-
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), turn);
-
-            Assert.That(_auction.CanDouble(turn), Is.False);
-        }
-
-        [Test]
-        public void CallThenCallWithSameTurnThrowsAuctionTurnAlreadyPlayedException()
-        {
-            var turn = new Turn(Seat.East);
-
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), turn);
-
-            Assert.Throws<AuctionTurnAlreadyPlayedException>(() =>
-            {
-                _auction.Call(new Bid(Level.Seven, Denomination.NoTrumps), turn);
-            });
-        }
-
-        [Test]
-        public void CallThenPassWithSameTurnThrowsAuctionTurnAlreadyPlayedException()
-        {
-            var turn = new Turn(Seat.East);
-
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), turn);
-
-            Assert.Throws<AuctionTurnAlreadyPlayedException>(() => { _auction.Pass(turn); });
-        }
-
-        [Test]
-        public void CallThenDoubleWithSameTurnThrowsAuctionTurnAlreadyPlayedException()
-        {
-            var turn = new Turn(Seat.East);
-
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), turn);
-
-            Assert.Throws<AuctionTurnAlreadyPlayedException>(() => { _auction.Double(turn); });
         }
 
         [Test]
