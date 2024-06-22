@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ContractBridge.Core.Impl
@@ -136,6 +137,8 @@ namespace ContractBridge.Core.Impl
             _bidEntries.Add(new BidEntry(bid, turn.Seat));
 
             turn.MarkPlayed();
+
+            RaiseCalledEvent(bid, turn);
         }
 
         public void Pass(ITurn turn)
@@ -154,6 +157,8 @@ namespace ContractBridge.Core.Impl
             }
 
             turn.MarkPlayed();
+
+            RaisePassedEvent(turn);
         }
 
         public void Double(ITurn turn)
@@ -181,8 +186,21 @@ namespace ContractBridge.Core.Impl
                 lastBid.Double();
 
                 turn.MarkPlayed();
+
+                if (lastBid.IsDoubled())
+                {
+                    RaiseDoubledEvent(turn);
+                }
+                else
+                {
+                    Debug.Assert(lastBid.IsRedoubled());
+                    RaiseRedoubledEvent(turn);
+                }
+
+                return;
             }
-            // TODO Double on nothing!
+
+            throw new AuctionDoubleBeforeCallException();
         }
 
         public event EventHandler<IAuction.CallEventArgs>? Called;
@@ -190,6 +208,26 @@ namespace ContractBridge.Core.Impl
         public event EventHandler<IAuction.DoubleEventArgs>? Doubled;
         public event EventHandler<IAuction.RedoubleEventArgs>? Redoubled;
         public event EventHandler<IAuction.ContractEventArgs>? FinalContractMade;
+
+        private void RaiseCalledEvent(IBid bid, ITurn turn)
+        {
+            Called?.Invoke(this, new IAuction.CallEventArgs(bid, turn));
+        }
+
+        private void RaisePassedEvent(ITurn turn)
+        {
+            Passed?.Invoke(this, new IAuction.PassEventArgs(turn));
+        }
+
+        private void RaiseRedoubledEvent(ITurn turn)
+        {
+            Redoubled?.Invoke(this, new IAuction.RedoubleEventArgs(turn));
+        }
+
+        private void RaiseDoubledEvent(ITurn turn)
+        {
+            Doubled?.Invoke(this, new IAuction.DoubleEventArgs(turn));
+        }
 
         private static bool IsCallTooLow(IBid bid, IBid lastBid)
         {

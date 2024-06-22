@@ -23,6 +23,10 @@ namespace ContractBridge.Core
     {
     }
 
+    public class AuctionDoubleBeforeCallException : InvalidAuctionPlayException
+    {
+    }
+
     public interface IAuction
     {
         IBoard Board { get; }

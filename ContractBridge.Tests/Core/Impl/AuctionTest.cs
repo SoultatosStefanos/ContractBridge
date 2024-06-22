@@ -360,6 +360,12 @@ namespace ContractBridge.Tests.Core.Impl
         }
 
         [Test]
+        public void DoubleBeforeCallThrowsAuctionDoubleBeforeCallException()
+        {
+            Assert.Throws<AuctionDoubleBeforeCallException>(() => { _auction.Double(new Turn(Seat.East)); });
+        }
+
+        [Test]
         public void CanDoubleOnOpponent()
         {
             _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
@@ -425,6 +431,56 @@ namespace ContractBridge.Tests.Core.Impl
             _auction.Double(new Turn(Seat.West));
 
             Assert.Throws<BidAlreadyReDoubledException>(() => { _auction.Double(new Turn(Seat.North)); });
+        }
+
+        [Test]
+        public void CallRaisesCallEvent()
+        {
+            var eventRaised = false;
+            _auction.Called += (sender, args) => eventRaised = true;
+
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+
+            Assert.That(eventRaised, Is.True);
+        }
+
+        [Test]
+        public void PassRaisesPassEvent()
+        {
+            var eventRaised = false;
+            _auction.Passed += (sender, args) => eventRaised = true;
+
+            _auction.Pass(new Turn(Seat.East));
+
+            Assert.That(eventRaised, Is.True);
+        }
+
+        [Test]
+        public void DoubleRaisesDoubledEvent()
+        {
+            var eventRaised = false;
+            _auction.Doubled += (sender, args) => eventRaised = true;
+
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+
+            _auction.Double(new Turn(Seat.North));
+
+            Assert.That(eventRaised, Is.True);
+        }
+
+        [Test]
+        public void RedoubleRaisesRedoubledEvent()
+        {
+            var eventRaised = false;
+            _auction.Redoubled += (sender, args) => eventRaised = true;
+
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+
+            _auction.Double(new Turn(Seat.North));
+
+            _auction.Double(new Turn(Seat.West));
+
+            Assert.That(eventRaised, Is.True);
         }
     }
 }
