@@ -159,7 +159,6 @@ namespace ContractBridge.Core.Impl
             _bidEntries.Add(new BidEntry(bid, turn.Seat));
 
             turn.MarkPlayed();
-
             RaiseCalledEvent(bid, turn);
 
             _passCount = 0;
@@ -172,27 +171,21 @@ namespace ContractBridge.Core.Impl
                 throw new AuctionTurnAlreadyPlayedException();
             }
 
+            turn.MarkPlayed();
+            RaisePassedEvent(turn);
+
             if (LastBidEntry() is { } lastBidEntry)
             {
-                turn.MarkPlayed();
-
-                RaisePassedEvent(turn);
-
                 if (!SavePassAndCheckForAdvance())
                 {
                     return;
                 }
 
                 FinalContract = MakeFinalContract(lastBidEntry);
-
                 RaiseFinalContractMade(FinalContract);
             }
             else
             {
-                turn.MarkPlayed();
-
-                RaisePassedEvent(turn);
-
                 if (SavePassAndCheckForAdvance())
                 {
                     RaisePassedOutEvent();
@@ -222,17 +215,13 @@ namespace ContractBridge.Core.Impl
                 }
 
                 lastBidEntry.Double(turn.Seat);
-
                 turn.MarkPlayed();
-
                 RaiseRedoubledEvent(turn);
             }
             else
             {
                 lastBidEntry.Double(turn.Seat);
-
                 turn.MarkPlayed();
-
                 RaiseDoubledEvent(turn);
             }
 

@@ -17,6 +17,12 @@ namespace ContractBridge.Tests.Core.Impl
         private Auction _auction;
 
         [Test]
+        public void InitiallyBidsAreEmpty()
+        {
+            Assert.That(_auction.AllBids, Is.Empty);
+        }
+
+        [Test]
         public void CantCallWithPlayedTurn()
         {
             var turn = new Turn(Seat.East);
