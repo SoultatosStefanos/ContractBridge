@@ -400,7 +400,31 @@ namespace ContractBridge.Tests.Core.Impl
 
             _auction.Double(new Turn(Seat.North));
 
-            Assert.DoesNotThrow(() => { _auction.Double(new Turn(Seat.East)); });
+            Assert.DoesNotThrow(() => { _auction.Double(new Turn(Seat.South)); });
+        }
+
+        [Test]
+        public void CantReReDoubleOnOpponent()
+        {
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+
+            _auction.Double(new Turn(Seat.North));
+
+            _auction.Double(new Turn(Seat.West));
+
+            Assert.That(_auction.CanDouble(new Turn(Seat.West)), Is.False);
+        }
+
+        [Test]
+        public void ReReDoubleThrowsBidAlreadyRedoubledException()
+        {
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+
+            _auction.Double(new Turn(Seat.North));
+
+            _auction.Double(new Turn(Seat.West));
+
+            Assert.Throws<BidAlreadyReDoubledException>(() => { _auction.Double(new Turn(Seat.North)); });
         }
     }
 }

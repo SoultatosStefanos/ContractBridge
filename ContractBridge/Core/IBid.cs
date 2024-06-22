@@ -1,10 +1,26 @@
+using System;
+
 namespace ContractBridge.Core
 {
+    public class BidAlreadyReDoubledException : Exception
+    {
+    }
+
     public interface IBid
     {
         Level Level { get; }
 
         Denomination Denomination { get; }
+
+        bool IsDoubled();
+
+        bool IsRedoubled();
+
+        void Double();
+
+        event EventHandler Doubled;
+
+        event EventHandler Redoubled;
     }
 
     public static class BidExtensions

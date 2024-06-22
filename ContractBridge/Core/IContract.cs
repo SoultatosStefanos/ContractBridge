@@ -2,8 +2,12 @@ using System;
 
 namespace ContractBridge.Core
 {
-    public interface IContract : IBid
+    public interface IContract
     {
+        Level Level { get; }
+
+        Denomination Denomination { get; }
+
         Seat Declarer { get; }
 
         Risk? Risk { get; }

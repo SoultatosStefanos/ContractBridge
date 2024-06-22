@@ -4,53 +4,27 @@ using System.Linq;
 
 namespace ContractBridge.Core.Impl
 {
-    internal enum BidEntryType
-    {
-        Call,
-        Double,
-        Redouble
-    }
-
     internal class BidEntry
     {
-        private BidEntry(IBid? bid, Seat seat, BidEntryType type)
+        public BidEntry(IBid bid, Seat seat)
         {
             Bid = bid;
             Seat = seat;
-            Type = type;
         }
 
-        public IBid? Bid { get; }
-
+        public IBid Bid { get; }
         public Seat Seat { get; }
 
-        public BidEntryType Type { get; }
-
-        public bool IsCall => Type == BidEntryType.Call;
-
-        public bool IsDouble => Type == BidEntryType.Double;
-
-        public bool IsRedouble => Type == BidEntryType.Redouble;
-
-        public static BidEntry Call(IBid bid, Seat seat)
+        public void Deconstruct(out IBid bid, out Seat seat)
         {
-            return new BidEntry(bid, seat, BidEntryType.Call);
-        }
-
-        public static BidEntry Double(Seat seat)
-        {
-            return new BidEntry(null, seat, BidEntryType.Double);
-        }
-
-        public static BidEntry Redouble(Seat seat)
-        {
-            return new BidEntry(null, seat, BidEntryType.Redouble);
+            bid = Bid;
+            seat = Seat;
         }
     }
 
     public class Auction : IAuction
     {
-        private readonly List<BidEntry> _bidsBySeat = new();
+        private readonly List<BidEntry> _bidEntries = new();
 
         private readonly IContractFactory _contractFactory;
 
@@ -64,6 +38,8 @@ namespace ContractBridge.Core.Impl
 
         public IContract? FinalContract { get; }
 
+        public IEnumerable<IBid> AllBids => _bidEntries.Select(entry => entry.Bid);
+
         public bool CanCall(IBid bid, ITurn turn)
         {
             if (turn.IsPlayed())
@@ -71,17 +47,14 @@ namespace ContractBridge.Core.Impl
                 return false;
             }
 
-            if (LastBidSeat() is { } lastBidSeatValue)
+            if (LastBidEntry() is var (lastBid, lastBidSeat))
             {
-                if (lastBidSeatValue == turn.Seat)
+                if (lastBidSeat == turn.Seat)
                 {
                     return false;
                 }
-            }
 
-            if (LastBid() is { } lastBidValue)
-            {
-                if (bid.Level <= lastBidValue.Level && bid.Denomination <= lastBidValue.Denomination)
+                if (IsCallTooLow(bid, lastBid))
                 {
                     return false;
                 }
@@ -97,9 +70,9 @@ namespace ContractBridge.Core.Impl
                 return false;
             }
 
-            if (LastBidSeat() is { } lastBidSeatValue)
+            if (LastBidEntry() is var (_, lastBidSeat))
             {
-                if (lastBidSeatValue == turn.Seat)
+                if (lastBidSeat == turn.Seat)
                 {
                     return false;
                 }
@@ -115,20 +88,24 @@ namespace ContractBridge.Core.Impl
                 return false;
             }
 
-            if (LastBidSeat() is { } lastBidSeatValue)
+            if (LastBidEntry() is var (lastBid, lastBidSeat))
             {
-                if (lastBidSeatValue == turn.Seat)
+                if (lastBidSeat == turn.Seat)
                 {
-                    return false;
+                    return lastBid.IsDoubled(); // Redouble.
                 }
 
-                if (lastBidSeatValue == turn.Seat.Partner())
+                if (lastBidSeat == turn.Seat.Partner())
+                {
+                    return lastBid.IsDoubled(); // Redouble.
+                }
+
+                if (lastBid.IsDoubled())
                 {
                     return false;
                 }
             }
-
-            if (LastBidEntry() == null)
+            else
             {
                 return false;
             }
@@ -143,23 +120,20 @@ namespace ContractBridge.Core.Impl
                 throw new AuctionTurnAlreadyPlayedException();
             }
 
-            if (LastBidSeat() is { } lastBidSeatValue)
+            if (LastBidEntry() is var (lastBid, lastBidSeat))
             {
-                if (lastBidSeatValue == turn.Seat)
+                if (lastBidSeat == turn.Seat)
                 {
                     throw new AuctionPlayAgainstSelfException();
                 }
-            }
 
-            if (LastBid() is { } lastBidValue)
-            {
-                if (bid.Level <= lastBidValue.Level && bid.Denomination <= lastBidValue.Denomination)
+                if (IsCallTooLow(bid, lastBid))
                 {
                     throw new AuctionCallTooLowException();
                 }
             }
 
-            _bidsBySeat.Add(BidEntry.Call(bid, turn.Seat));
+            _bidEntries.Add(new BidEntry(bid, turn.Seat));
 
             turn.MarkPlayed();
         }
@@ -171,9 +145,9 @@ namespace ContractBridge.Core.Impl
                 throw new AuctionTurnAlreadyPlayedException();
             }
 
-            if (LastBidSeat() is { } lastBidSeatValue)
+            if (LastBidEntry() is var (_, lastBidSeat))
             {
-                if (lastBidSeatValue == turn.Seat)
+                if (lastBidSeat == turn.Seat)
                 {
                     throw new AuctionPlayAgainstSelfException();
                 }
@@ -189,27 +163,26 @@ namespace ContractBridge.Core.Impl
                 throw new AuctionTurnAlreadyPlayedException();
             }
 
-            if (LastBidSeat() is { } lastBidSeatValue)
+            if (LastBidEntry() is var (lastBid, lastBidSeat))
             {
-                if (lastBidSeatValue == turn.Seat)
+                if (lastBidSeat == turn.Seat)
                 {
                     throw new AuctionPlayAgainstSelfException();
                 }
 
-                if (lastBidSeatValue == turn.Seat.Partner())
+                if (lastBidSeat == turn.Seat.Partner())
                 {
-                    throw new AuctionDoubleOnPartnerException();
+                    if (!lastBid.IsDoubled()) // Else redouble
+                    {
+                        throw new AuctionDoubleOnPartnerException();
+                    }
                 }
-            }
 
-            // TODO Double on nothing!
-
-            if (LastBidEntry() is { } lastBidEntryValue)
-            {
-                _bidsBySeat.Add(MakeDoubleBidEntry(lastBidEntryValue, turn.Seat));
+                lastBid.Double();
 
                 turn.MarkPlayed();
             }
+            // TODO Double on nothing!
         }
 
         public event EventHandler<IAuction.CallEventArgs>? Called;
@@ -218,30 +191,14 @@ namespace ContractBridge.Core.Impl
         public event EventHandler<IAuction.RedoubleEventArgs>? Redoubled;
         public event EventHandler<IAuction.ContractEventArgs>? FinalContractMade;
 
-        private static BidEntry MakeDoubleBidEntry(BidEntry lastBidEntry, Seat seat)
+        private static bool IsCallTooLow(IBid bid, IBid lastBid)
         {
-            return lastBidEntry.Type switch
-            {
-                BidEntryType.Call => BidEntry.Double(seat),
-                BidEntryType.Double => BidEntry.Redouble(seat),
-                BidEntryType.Redouble => throw new AuctionReReDoubleException(),
-                _ => null!
-            };
-        }
-
-        private IBid? LastBid()
-        {
-            return LastBidEntry()?.Bid;
-        }
-
-        private Seat? LastBidSeat()
-        {
-            return LastBidEntry()?.Seat;
+            return bid.Level <= lastBid.Level && bid.Denomination <= lastBid.Denomination;
         }
 
         private BidEntry? LastBidEntry()
         {
-            return _bidsBySeat.LastOrDefault();
+            return _bidEntries.LastOrDefault();
         }
     }
 }

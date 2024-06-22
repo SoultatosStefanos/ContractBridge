@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
@@ -22,15 +23,13 @@ namespace ContractBridge.Core
     {
     }
 
-    public class AuctionReReDoubleException : InvalidAuctionPlayException
-    {
-    }
-
     public interface IAuction
     {
         IBoard Board { get; }
 
         IContract? FinalContract { get; }
+
+        IEnumerable<IBid> AllBids { get; }
 
         bool CanCall(IBid bid, ITurn turn);
 
