@@ -27,6 +27,10 @@ namespace ContractBridge.Core
     {
     }
 
+    public class AuctionReReDoubleException : Exception
+    {
+    }
+
     public interface IAuction
     {
         IBoard Board { get; }

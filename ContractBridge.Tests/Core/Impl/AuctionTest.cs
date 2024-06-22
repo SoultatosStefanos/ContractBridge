@@ -422,7 +422,7 @@ namespace ContractBridge.Tests.Core.Impl
         }
 
         [Test]
-        public void ReReDoubleThrowsBidAlreadyRedoubledException()
+        public void ReReDoubleThrowsAuctionReReDoubleException()
         {
             _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
 
@@ -430,7 +430,7 @@ namespace ContractBridge.Tests.Core.Impl
 
             _auction.Double(new Turn(Seat.West));
 
-            Assert.Throws<BidAlreadyReDoubledException>(() => { _auction.Double(new Turn(Seat.North)); });
+            Assert.Throws<AuctionReReDoubleException>(() => { _auction.Double(new Turn(Seat.North)); });
         }
 
         [Test]
