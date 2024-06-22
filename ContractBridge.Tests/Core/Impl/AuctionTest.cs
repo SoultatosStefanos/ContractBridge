@@ -574,5 +574,23 @@ namespace ContractBridge.Tests.Core.Impl
                 Is.EqualTo(new Contract(Level.One, Denomination.Hearts, Seat.South, Risk.Redoubled))
             );
         }
+
+        [Test]
+        public void PassedOut()
+        {
+            var eventRaised = false;
+            _auction.PassedOut += (sender, args) => eventRaised = true;
+
+            _auction.Pass(new Turn(Seat.East));
+            _auction.Pass(new Turn(Seat.North));
+            _auction.Pass(new Turn(Seat.South));
+            _auction.Pass(new Turn(Seat.West));
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(eventRaised, Is.True);
+                Assert.That(_auction.FinalContract, Is.Null);
+            });
+        }
     }
 }

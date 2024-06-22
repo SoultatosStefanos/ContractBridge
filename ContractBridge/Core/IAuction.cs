@@ -57,6 +57,8 @@ namespace ContractBridge.Core
 
         event EventHandler<ContractEventArgs> FinalContractMade;
 
+        event EventHandler PassedOut;
+
         public sealed class CallEventArgs : EventArgs
         {
             public CallEventArgs(IBid bid, ITurn turn)

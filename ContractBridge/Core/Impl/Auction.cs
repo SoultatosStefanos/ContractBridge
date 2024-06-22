@@ -190,7 +190,7 @@ namespace ContractBridge.Core.Impl
 
                 if (SavePassAndCheckForAdvance())
                 {
-                    // TODO Handle "passed out" auction
+                    RaisePassedOutEvent();
                 }
             }
         }
@@ -245,6 +245,7 @@ namespace ContractBridge.Core.Impl
         public event EventHandler<IAuction.DoubleEventArgs>? Doubled;
         public event EventHandler<IAuction.RedoubleEventArgs>? Redoubled;
         public event EventHandler<IAuction.ContractEventArgs>? FinalContractMade;
+        public event EventHandler? PassedOut;
 
         private bool SavePassAndCheckForAdvance()
         {
@@ -284,6 +285,11 @@ namespace ContractBridge.Core.Impl
         private void RaiseDoubledEvent(ITurn turn)
         {
             Doubled?.Invoke(this, new IAuction.DoubleEventArgs(turn));
+        }
+
+        private void RaisePassedOutEvent()
+        {
+            PassedOut?.Invoke(this, EventArgs.Empty);
         }
 
         private static bool IsCallTooLow(IBid bid, IBid lastBid)
