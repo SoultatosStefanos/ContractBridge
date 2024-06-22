@@ -25,18 +25,15 @@ namespace ContractBridge.Core
 
         event EventHandler<TrickEventArgs> TrickWon;
 
-        event EventHandler<DoneEventArgs> Done;
+        event EventHandler Done;
 
         public sealed class FollowEventArgs : EventArgs
         {
-            public FollowEventArgs(IGame game, ICard card, ITurn turn)
+            public FollowEventArgs(ICard card, ITurn turn)
             {
-                Game = game;
                 Card = card;
                 Turn = turn;
             }
-
-            public IGame Game { get; }
 
             public ICard Card { get; }
 
@@ -45,38 +42,22 @@ namespace ContractBridge.Core
 
         public sealed class PassEventArgs : EventArgs
         {
-            public PassEventArgs(IGame game, ITurn turn)
+            public PassEventArgs(ITurn turn)
             {
-                Game = game;
                 Turn = turn;
             }
-
-            public IGame Game { get; }
 
             public ITurn Turn { get; }
         }
 
         public sealed class TrickEventArgs : EventArgs
         {
-            public TrickEventArgs(IGame game, ITrick trick)
+            public TrickEventArgs(ITrick trick)
             {
-                Game = game;
                 Trick = trick;
             }
 
-            public IGame Game { get; }
-
             public ITrick Trick { get; }
-        }
-
-        public sealed class DoneEventArgs : EventArgs
-        {
-            public DoneEventArgs(IGame game)
-            {
-                Game = game;
-            }
-
-            public IGame Game { get; }
         }
     }
 }

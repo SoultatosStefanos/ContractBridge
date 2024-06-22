@@ -31,29 +31,16 @@ namespace ContractBridge.Core
 
         event EventHandler<PhaseEventArgs> PhaseChanged;
 
-        event EventHandler<ReplayEventArgs> Replayed;
+        event EventHandler Replayed;
 
         public sealed class PhaseEventArgs : EventArgs
         {
-            public PhaseEventArgs(ISession session, Phase phase)
+            public PhaseEventArgs(Phase phase)
             {
-                Session = session;
                 Phase = phase;
             }
 
-            public ISession Session { get; }
-
             public Phase Phase { get; }
-        }
-
-        public sealed class ReplayEventArgs : EventArgs
-        {
-            public ReplayEventArgs(ISession session)
-            {
-                Session = session;
-            }
-
-            public ISession Session { get; }
         }
     }
 }
