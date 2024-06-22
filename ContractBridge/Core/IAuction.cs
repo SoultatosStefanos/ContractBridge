@@ -1,13 +1,34 @@
 using System;
-using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
+    public class InvalidAuctionPlayException : Exception
+    {
+    }
+
+    public class AuctionTurnAlreadyPlayedException : InvalidAuctionPlayException
+    {
+    }
+
+    public class AuctionPlayAgainstSelfException : InvalidAuctionPlayException
+    {
+    }
+
+    public class AuctionCallTooLowException : InvalidAuctionPlayException
+    {
+    }
+
+    public class AuctionDoubleOnPartnerException : InvalidAuctionPlayException
+    {
+    }
+
+    public class AuctionReReDoubleException : InvalidAuctionPlayException
+    {
+    }
+
     public interface IAuction
     {
         IBoard Board { get; }
-
-        IEnumerable<IBid> AllBids { get; }
 
         IContract? FinalContract { get; }
 
@@ -17,15 +38,11 @@ namespace ContractBridge.Core
 
         bool CanDouble(ITurn turn);
 
-        bool CanRedouble(ITurn turn);
-
         void Call(IBid bid, ITurn turn);
 
         void Pass(ITurn turn);
 
         void Double(ITurn turn);
-
-        void Redouble(ITurn turn);
 
         event EventHandler<CallEventArgs> Called;
 
@@ -39,14 +56,11 @@ namespace ContractBridge.Core
 
         public sealed class CallEventArgs : EventArgs
         {
-            public CallEventArgs(IAuction auction, IBid bid, ITurn turn)
+            public CallEventArgs(IBid bid, ITurn turn)
             {
-                Auction = auction;
                 Bid = bid;
                 Turn = turn;
             }
-
-            public IAuction Auction { get; }
 
             public IBid Bid { get; }
 
@@ -55,52 +69,40 @@ namespace ContractBridge.Core
 
         public sealed class PassEventArgs : EventArgs
         {
-            public PassEventArgs(IAuction auction, ITurn turn)
+            public PassEventArgs(ITurn turn)
             {
-                Auction = auction;
                 Turn = turn;
             }
-
-            public IAuction Auction { get; }
 
             public ITurn Turn { get; }
         }
 
         public sealed class DoubleEventArgs : EventArgs
         {
-            public DoubleEventArgs(IAuction auction, ITurn turn)
+            public DoubleEventArgs(ITurn turn)
             {
-                Auction = auction;
                 Turn = turn;
             }
-
-            public IAuction Auction { get; }
 
             public ITurn Turn { get; }
         }
 
         public sealed class RedoubleEventArgs : EventArgs
         {
-            public RedoubleEventArgs(IAuction auction, ITurn turn)
+            public RedoubleEventArgs(ITurn turn)
             {
-                Auction = auction;
                 Turn = turn;
             }
-
-            public IAuction Auction { get; }
 
             public ITurn Turn { get; }
         }
 
         public sealed class ContractEventArgs : EventArgs
         {
-            public ContractEventArgs(IAuction auction, IContract contract)
+            public ContractEventArgs(IContract contract)
             {
-                Auction = auction;
                 Contract = contract;
             }
-
-            public IAuction Auction { get; }
 
             public IContract Contract { get; }
         }

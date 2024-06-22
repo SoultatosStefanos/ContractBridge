@@ -1,5 +1,3 @@
-using System;
-
 namespace ContractBridge.Core
 {
     public interface IBid
@@ -13,7 +11,7 @@ namespace ContractBridge.Core
     {
         public static int Tricks(this IBid bid)
         {
-            throw new NotImplementedException(); // TODO
+            return (int)bid.Level + 6;
         }
     }
 }

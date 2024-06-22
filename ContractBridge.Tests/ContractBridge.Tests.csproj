@@ -132,6 +132,7 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Core\Impl\AuctionTest.cs"/>
         <Compile Include="Core\Impl\BoardTest.cs"/>
         <Compile Include="Core\Impl\DeckTest.cs"/>
         <Compile Include="Core\Impl\HandTest.cs"/>
