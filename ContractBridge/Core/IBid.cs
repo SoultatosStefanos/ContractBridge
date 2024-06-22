@@ -12,11 +12,13 @@ namespace ContractBridge.Core
 
         Denomination Denomination { get; }
 
+        Seat? DoubledSeat();
+
         bool IsDoubled();
 
         bool IsRedoubled();
 
-        void Double();
+        void Double(Seat fromSeat);
 
         event EventHandler Doubled;
 

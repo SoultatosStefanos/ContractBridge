@@ -482,5 +482,97 @@ namespace ContractBridge.Tests.Core.Impl
 
             Assert.That(eventRaised, Is.True);
         }
+
+        [Test]
+        public void CallThenThreePassesRaisesFinalContractMadeEvent()
+        {
+            var eventRaised = false;
+            _auction.FinalContractMade += (sender, args) => eventRaised = true;
+
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Pass(new Turn(Seat.North));
+            _auction.Pass(new Turn(Seat.South));
+            _auction.Pass(new Turn(Seat.West));
+
+            Assert.That(eventRaised, Is.True);
+        }
+
+        [Test]
+        public void FinalContractOneBid()
+        {
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Pass(new Turn(Seat.North));
+            _auction.Pass(new Turn(Seat.South));
+            _auction.Pass(new Turn(Seat.West));
+
+            Assert.That(
+                _auction.FinalContract,
+                Is.EqualTo(new Contract(Level.One, Denomination.Clubs, Seat.East, null))
+            );
+        }
+
+        [Test]
+        public void FinalContractOverCall()
+        {
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.South));
+            _auction.Pass(new Turn(Seat.West));
+            _auction.Pass(new Turn(Seat.North));
+            _auction.Pass(new Turn(Seat.East));
+
+            Assert.That(
+                _auction.FinalContract,
+                Is.EqualTo(new Contract(Level.One, Denomination.Spades, Seat.South, null))
+            );
+        }
+
+        [Test]
+        public void FinalContractTwoOverCalls()
+        {
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.South));
+            _auction.Call(new Bid(Level.Two, Denomination.Spades), new Turn(Seat.West));
+            _auction.Pass(new Turn(Seat.North));
+            _auction.Pass(new Turn(Seat.East));
+            _auction.Pass(new Turn(Seat.South));
+
+            Assert.That(
+                _auction.FinalContract,
+                Is.EqualTo(new Contract(Level.Two, Denomination.Spades, Seat.West, null))
+            );
+        }
+
+        [Test]
+        public void FinalContractDoubled()
+        {
+            _auction.Call(new Bid(Level.One, Denomination.Hearts), new Turn(Seat.West));
+            _auction.Pass(new Turn(Seat.North));
+            _auction.Call(new Bid(Level.Four, Denomination.Hearts), new Turn(Seat.East));
+            _auction.Double(new Turn(Seat.South));
+            _auction.Pass(new Turn(Seat.West));
+            _auction.Pass(new Turn(Seat.North));
+            _auction.Pass(new Turn(Seat.East));
+
+            Assert.That(
+                _auction.FinalContract,
+                Is.EqualTo(new Contract(Level.Four, Denomination.Hearts, Seat.South, Risk.Doubled))
+            );
+        }
+
+        [Test]
+        public void FinalContractRedoubled()
+        {
+            _auction.Call(new Bid(Level.One, Denomination.Hearts), new Turn(Seat.North));
+            _auction.Double(new Turn(Seat.East));
+            _auction.Double(new Turn(Seat.South));
+            _auction.Pass(new Turn(Seat.West));
+            _auction.Pass(new Turn(Seat.North));
+            _auction.Pass(new Turn(Seat.East));
+
+            Assert.That(
+                _auction.FinalContract,
+                Is.EqualTo(new Contract(Level.One, Denomination.Hearts, Seat.South, Risk.Redoubled))
+            );
+        }
     }
 }

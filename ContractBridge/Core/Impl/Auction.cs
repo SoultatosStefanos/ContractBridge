@@ -29,6 +29,10 @@ namespace ContractBridge.Core.Impl
 
         private readonly IContractFactory _contractFactory;
 
+        private readonly int _requiredPassCountToAdvance = Enum.GetNames(typeof(Seat)).Length - 1;
+
+        private int _passCount;
+
         public Auction(IBoard board, IContractFactory contractFactory)
         {
             Board = board;
@@ -37,7 +41,7 @@ namespace ContractBridge.Core.Impl
 
         public IBoard Board { get; }
 
-        public IContract? FinalContract { get; }
+        public IContract? FinalContract { get; private set; }
 
         public IEnumerable<IBid> AllBids => _bidEntries.Select(entry => entry.Bid);
 
@@ -139,6 +143,8 @@ namespace ContractBridge.Core.Impl
             turn.MarkPlayed();
 
             RaiseCalledEvent(bid, turn);
+
+            _passCount = 0;
         }
 
         public void Pass(ITurn turn)
@@ -148,17 +154,45 @@ namespace ContractBridge.Core.Impl
                 throw new AuctionTurnAlreadyPlayedException();
             }
 
-            if (LastBidEntry() is var (_, lastBidSeat))
+            if (LastBidEntry() is var (lastBid, lastBidSeat))
             {
                 if (lastBidSeat == turn.Seat)
                 {
-                    throw new AuctionPlayAgainstSelfException();
+                    if (!lastBid.IsDoubled() && !lastBid.IsRedoubled())
+                    {
+                        throw new AuctionPlayAgainstSelfException();
+                    }
+                }
+
+                turn.MarkPlayed();
+
+                RaisePassedEvent(turn);
+
+                if (SavePassAndCheckForAdvance())
+                {
+                    var declarer = lastBid.IsDoubled() || lastBid.IsRedoubled() ? lastBid.DoubledSeat() : lastBidSeat;
+
+                    if (!declarer.HasValue)
+                    {
+                        throw new InvalidOperationException("Doubling without setting seat");
+                    }
+
+                    FinalContract = MakeFinalContract(lastBid, declarer.Value);
+
+                    RaiseFinalContractMade(FinalContract);
                 }
             }
+            else
+            {
+                turn.MarkPlayed();
 
-            turn.MarkPlayed();
+                RaisePassedEvent(turn);
 
-            RaisePassedEvent(turn);
+                if (SavePassAndCheckForAdvance())
+                {
+                    // TODO Handle "passed out" auction
+                }
+            }
         }
 
         public void Double(ITurn turn)
@@ -183,7 +217,7 @@ namespace ContractBridge.Core.Impl
                     }
                 }
 
-                lastBid.Double();
+                lastBid.Double(turn.Seat);
 
                 turn.MarkPlayed();
 
@@ -194,8 +228,11 @@ namespace ContractBridge.Core.Impl
                 else
                 {
                     Debug.Assert(lastBid.IsRedoubled());
+
                     RaiseRedoubledEvent(turn);
                 }
+
+                _passCount = 0;
 
                 return;
             }
@@ -208,6 +245,26 @@ namespace ContractBridge.Core.Impl
         public event EventHandler<IAuction.DoubleEventArgs>? Doubled;
         public event EventHandler<IAuction.RedoubleEventArgs>? Redoubled;
         public event EventHandler<IAuction.ContractEventArgs>? FinalContractMade;
+
+        private bool SavePassAndCheckForAdvance()
+        {
+            return ++_passCount == _requiredPassCountToAdvance;
+        }
+
+        private IContract MakeFinalContract(IBid lastBid, Seat lastBidSeat)
+        {
+            return _contractFactory.Create(
+                lastBid.Level,
+                lastBid.Denomination,
+                lastBidSeat,
+                lastBid.IsDoubled() ? Risk.Doubled : lastBid.IsRedoubled() ? Risk.Redoubled : null
+            );
+        }
+
+        private void RaiseFinalContractMade(IContract finalContract)
+        {
+            FinalContractMade?.Invoke(this, new IAuction.ContractEventArgs(finalContract));
+        }
 
         private void RaiseCalledEvent(IBid bid, ITurn turn)
         {

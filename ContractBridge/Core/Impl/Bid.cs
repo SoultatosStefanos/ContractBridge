@@ -12,6 +12,7 @@ namespace ContractBridge.Core.Impl
     public class Bid : IBid
     {
         private BidState _bidState = BidState.Normal;
+        private Seat? _doubledSeat;
 
         public Bid(Level level, Denomination denomination)
         {
@@ -23,6 +24,11 @@ namespace ContractBridge.Core.Impl
 
         public Denomination Denomination { get; }
 
+        public Seat? DoubledSeat()
+        {
+            return _doubledSeat;
+        }
+
         public bool IsDoubled()
         {
             return _bidState == BidState.Doubled;
@@ -33,17 +39,19 @@ namespace ContractBridge.Core.Impl
             return _bidState == BidState.Redoubled;
         }
 
-        public void Double()
+        public void Double(Seat fromSeat)
         {
             switch (_bidState)
             {
                 case BidState.Normal:
                     _bidState = BidState.Doubled;
+                    _doubledSeat = fromSeat;
                     RaiseDoubledEvent();
                     break;
 
                 case BidState.Doubled:
                     _bidState = BidState.Redoubled;
+                    _doubledSeat = fromSeat;
                     RaiseRedoubledEvent();
                     break;
 
