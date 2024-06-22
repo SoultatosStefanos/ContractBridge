@@ -1,5 +1,3 @@
-using System;
-
 namespace ContractBridge.Core
 {
     public interface IContract
@@ -17,7 +15,7 @@ namespace ContractBridge.Core
     {
         public static Seat Dummy(this IContract contract)
         {
-            throw new NotImplementedException(); // TODO
+            return contract.Declarer.Partner();
         }
     }
 }
