@@ -8,6 +8,14 @@ namespace ContractBridge.Core
 
     public interface IDeck : ICardCollection
     {
+        public enum Partition : byte
+        {
+            BySuit = 0,
+            ByRank
+        }
+
+        Partition InitialPartition { get; }
+
         void Shuffle(Random rng);
 
         void Deal(IBoard board);

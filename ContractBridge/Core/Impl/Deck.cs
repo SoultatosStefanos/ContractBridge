@@ -22,16 +22,31 @@ namespace ContractBridge.Core.Impl
     {
         private readonly ICard[] _cards;
 
-        public Deck(ICardFactory cardFactory)
+        public Deck(ICardFactory cardFactory, IDeck.Partition partition = IDeck.Partition.ByRank)
         {
-            _cards = GenerateAllCardCombinations().ToArray();
+            _cards = GetGeneratorByPartition().ToArray();
+            InitialPartition = partition;
 
             return;
 
-            IEnumerable<ICard> GenerateAllCardCombinations()
+            IEnumerable<ICard> GetGeneratorByPartition()
+            {
+                return partition == IDeck.Partition.ByRank
+                    ? GenerateAllCardCombinationsByRank()
+                    : GenerateAllCardCombinationsBySuit();
+            }
+
+            IEnumerable<ICard> GenerateAllCardCombinationsByRank()
             {
                 return from rank in Enum.GetValues(typeof(Rank)).Cast<Rank>()
                     from suit in Enum.GetValues(typeof(Suit)).Cast<Suit>()
+                    select cardFactory.Create(rank, suit);
+            }
+
+            IEnumerable<ICard> GenerateAllCardCombinationsBySuit()
+            {
+                return from suit in Enum.GetValues(typeof(Suit)).Cast<Suit>()
+                    from rank in Enum.GetValues(typeof(Rank)).Cast<Rank>()
                     select cardFactory.Create(rank, suit);
             }
         }
@@ -61,6 +76,8 @@ namespace ContractBridge.Core.Impl
         {
             return _cards.Contains(card);
         }
+
+        public IDeck.Partition InitialPartition { get; }
 
         public void Shuffle(Random rng)
         {

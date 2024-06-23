@@ -3,25 +3,25 @@ using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
+    public class CardNotInHandException : Exception
+    {
+    }
+
     public interface IGame
     {
         IBoard Board { get; }
 
+        TrumpSuit TrumpSuit { get; set; }
+
         IEnumerable<ICard> AllPlayedCards { get; }
 
-        bool CanFollow(ICard card, ITurn turn);
+        bool CanFollow(ICard card, Seat seat);
 
-        bool CanFollow(ITurn turn);
+        bool CanFollow(Seat seat);
 
-        bool CanPass(ITurn turn);
-
-        void Follow(ICard card, ITurn turn);
-
-        void Pass(ITurn turn);
+        void Follow(ICard card, Seat seat);
 
         event EventHandler<FollowEventArgs> Followed;
-
-        event EventHandler<PassEventArgs> Passed;
 
         event EventHandler<TrickEventArgs> TrickWon;
 
@@ -29,35 +29,28 @@ namespace ContractBridge.Core
 
         public sealed class FollowEventArgs : EventArgs
         {
-            public FollowEventArgs(ICard card, ITurn turn)
+            public FollowEventArgs(ICard card, Seat seat)
             {
                 Card = card;
-                Turn = turn;
+                Seat = seat;
             }
 
             public ICard Card { get; }
 
-            public ITurn Turn { get; }
-        }
-
-        public sealed class PassEventArgs : EventArgs
-        {
-            public PassEventArgs(ITurn turn)
-            {
-                Turn = turn;
-            }
-
-            public ITurn Turn { get; }
+            public Seat Seat { get; }
         }
 
         public sealed class TrickEventArgs : EventArgs
         {
-            public TrickEventArgs(ITrick trick)
+            public TrickEventArgs(ITrick trick, Seat seat)
             {
                 Trick = trick;
+                Seat = seat;
             }
 
             public ITrick Trick { get; }
+
+            public Seat Seat { get; }
         }
     }
 }
