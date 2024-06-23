@@ -7,22 +7,27 @@ namespace ContractBridge.Core.Impl
     public class Session : ISession
     {
         private readonly IAuctionFactory _auctionFactory;
+
         private readonly IPair _eastWestPair;
 
         private readonly IGameFactory _gameFactory;
 
         private readonly IPair _northSouthPair;
 
-        private readonly ITurnPlayContextFactory _turnPlayContextFactory;
-
-        private readonly ITurnSequenceFactory _turnSequenceFactory;
-
         private Phase _phase = Phase.Setup;
 
-        public Session(IDeck deck, IBoard board, IPairFactory pairFactory)
+        public Session(
+            IDeck deck,
+            IBoard board,
+            IPairFactory pairFactory,
+            IAuctionFactory auctionFactory,
+            IGameFactory gameFactory
+        )
         {
             Deck = deck;
             Board = board;
+            _auctionFactory = auctionFactory;
+            _gameFactory = gameFactory;
 
             _northSouthPair = pairFactory.Create(Partnership.NorthSouth);
             _eastWestPair = pairFactory.Create(Partnership.EastWest);
@@ -85,13 +90,7 @@ namespace ContractBridge.Core.Impl
             };
         }
 
-        public void Replay()
-        {
-            // TODO
-        }
-
         public event EventHandler<ISession.PhaseEventArgs>? PhaseChanged;
-        public event EventHandler? Replayed;
 
         private void RaisePhaseChangedEvent(Phase phase)
         {
@@ -105,7 +104,6 @@ namespace ContractBridge.Core.Impl
             Auction = _auctionFactory.Create();
             Auction.TurnPlayContext.TurnSequence.Lead = Board.Dealer;
             Auction.FinalContractMade += OnFinalContractMade;
-            Auction.PassedOut += OnAuctionPassedOut;
         }
 
         private void OnFinalContractMade(object sender, EventArgs args)
@@ -131,12 +129,9 @@ namespace ContractBridge.Core.Impl
 
         private void OnGameDone(object sender, EventArgs args)
         {
-            // TODO
-        }
+            Phase = Phase.Scoring;
 
-        private void OnAuctionPassedOut(object sender, EventArgs args)
-        {
-            Replay();
+            // TODO Scoring
         }
     }
 }

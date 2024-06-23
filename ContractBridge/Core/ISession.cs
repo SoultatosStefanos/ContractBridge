@@ -27,11 +27,7 @@ namespace ContractBridge.Core
 
         IPair OtherPair(IPair pair);
 
-        void Replay();
-
         event EventHandler<PhaseEventArgs> PhaseChanged;
-
-        event EventHandler Replayed;
 
         public sealed class PhaseEventArgs : EventArgs
         {
