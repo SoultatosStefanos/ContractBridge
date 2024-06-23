@@ -142,5 +142,30 @@ namespace ContractBridge.Tests.Core.Impl
                 Assert.That(_game.CanFollow(_board.Hand(Seat.South)[Rank.Queen, Suit.Spades], Seat.South), Is.False);
             });
         }
+
+        [Test]
+        public void CanFollowWithAnyCardWhenCantFollowSuit()
+        {
+            _game.Follow(_board.Hand(Seat.East)[Rank.Two, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_game.CanFollow(_board.Hand(Seat.South)[Rank.Two, Suit.Diamonds], Seat.South), Is.True);
+                Assert.That(_game.CanFollow(_board.Hand(Seat.South)[Rank.King, Suit.Hearts], Seat.South), Is.True);
+                Assert.That(_game.CanFollow(_board.Hand(Seat.South)[Rank.Queen, Suit.Spades], Seat.South), Is.True);
+            });
+        }
     }
 }

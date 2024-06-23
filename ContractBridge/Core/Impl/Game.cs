@@ -64,7 +64,7 @@ namespace ContractBridge.Core.Impl
 
         public bool CanFollow(Seat seat)
         {
-            return Board.Hand(seat).Any(card => CanFollow(card, seat));
+            return _turnPlayContext.CanPlayTurn(seat, () => true);
         }
 
         public void Follow(ICard card, Seat seat)
@@ -77,7 +77,7 @@ namespace ContractBridge.Core.Impl
             _turnPlayContext.PlayTurn(seat, () =>
             {
                 _playEntries.Add(new PlayEntry(card, seat));
-
+                Board.Hand(seat).Remove(card);
                 // TODO
             });
         }
