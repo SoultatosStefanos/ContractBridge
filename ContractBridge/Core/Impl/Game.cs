@@ -102,9 +102,12 @@ namespace ContractBridge.Core.Impl
 
                     RaiseTrickWonEvent(trick, trickWinner);
 
-                    _followCount = 0;
+                    if (IsGameDone(seatHand))
+                    {
+                        RaiseDoneEvent();
+                    }
 
-                    // TODO Check for empty hands
+                    _followCount = 0;
                 }
             });
         }
@@ -112,6 +115,11 @@ namespace ContractBridge.Core.Impl
         public event EventHandler<IGame.FollowEventArgs>? Followed;
         public event EventHandler<IGame.TrickEventArgs>? TrickWon;
         public event EventHandler? Done;
+
+        private bool IsGameDone(IHand seatHand)
+        {
+            return seatHand.IsEmpty() && Board.OtherHands(seatHand).All(hand => hand.IsEmpty());
+        }
 
         private Seat GetTrickWinner()
         {
@@ -166,6 +174,11 @@ namespace ContractBridge.Core.Impl
         private void RaiseTrickWonEvent(ITrick trick, Seat seat)
         {
             TrickWon?.Invoke(this, new IGame.TrickEventArgs(trick, seat));
+        }
+
+        private void RaiseDoneEvent()
+        {
+            Done?.Invoke(this, EventArgs.Empty);
         }
 
         private PlayEntry? LastPlayEntry()
