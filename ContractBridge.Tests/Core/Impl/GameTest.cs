@@ -16,7 +16,8 @@ namespace ContractBridge.Tests.Core.Impl
                 Dealer = Seat.North
             };
 
-            new Deck(new CardFactory(), IDeck.Partition.BySuit).Deal(_board);
+            _deck = new Deck(new CardFactory(), IDeck.Partition.BySuit);
+            _deck.Deal(_board);
 
             _game = new Game(
                 _board,
@@ -32,7 +33,9 @@ namespace ContractBridge.Tests.Core.Impl
 
         private Game _game;
 
-        private Board _board;
+        private IBoard _board;
+
+        private IDeck _deck;
 
         [Test]
         public void InitiallyPlayedCardsAreEmpty()
@@ -76,6 +79,44 @@ namespace ContractBridge.Tests.Core.Impl
         public void InitiallyFollowWithAnyCard()
         {
             Assert.DoesNotThrow(() => _game.Follow(_board.Hand(Seat.East)[0], Seat.East));
+        }
+
+        [Test]
+        public void CanFollowWithCardOutOfHandThrowsCardNotInHandException()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.Throws<CardNotInHandException>(() =>
+                    _game.CanFollow(_deck[Rank.Four, Suit.Clubs], Seat.South)
+                );
+
+                Assert.Throws<CardNotInHandException>(() =>
+                    _game.CanFollow(_deck[Rank.Five, Suit.Clubs], Seat.South)
+                );
+
+                Assert.Throws<CardNotInHandException>(() =>
+                    _game.CanFollow(_deck[Rank.Two, Suit.Clubs], Seat.South)
+                );
+            });
+        }
+
+        [Test]
+        public void FollowWithCardOutOfHandThrowsCardNotInHandException()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.Throws<CardNotInHandException>(() =>
+                    _game.Follow(_deck[Rank.Four, Suit.Clubs], Seat.South)
+                );
+
+                Assert.Throws<CardNotInHandException>(() =>
+                    _game.Follow(_deck[Rank.Five, Suit.Clubs], Seat.South)
+                );
+
+                Assert.Throws<CardNotInHandException>(() =>
+                    _game.Follow(_deck[Rank.Two, Suit.Clubs], Seat.South)
+                );
+            });
         }
 
         [Test]

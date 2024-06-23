@@ -58,12 +58,6 @@ namespace ContractBridge.Core.Impl
                     }
                 }
 
-                // TODO Check for follow suit
-
-                // TODO Check for discarding
-
-                // TODO check for trumping
-
                 return true;
             });
         }
