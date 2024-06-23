@@ -96,9 +96,11 @@ namespace ContractBridge.Core.Impl
 
                 if (SaveFollowAndCheckForAdvance())
                 {
+                    var trickWinner = GetTrickWinner();
                     var last4Cards = TakeLast4Cards();
                     var trick = _trickFactory.Create(last4Cards);
-                    RaiseTrickWonEvent(trick, seat);
+
+                    RaiseTrickWonEvent(trick, trickWinner);
 
                     // TODO Check for empty hands
                 }
@@ -108,6 +110,20 @@ namespace ContractBridge.Core.Impl
         public event EventHandler<IGame.FollowEventArgs>? Followed;
         public event EventHandler<IGame.TrickEventArgs>? TrickWon;
         public event EventHandler? Done;
+
+        private Seat GetTrickWinner()
+        {
+            Debug.Assert(_playEntries.Count == 4);
+
+            var last4 = _playEntries.GetRange(_playEntries.Count - 4, 4);
+
+            // TODO More cases, this assumes that everyone followed suit
+            // TODO Check trump card
+            return last4
+                .OrderByDescending(entry => entry.Card.Rank)
+                .FirstOrDefault()!
+                .Seat;
+        }
 
         private bool SaveFollowAndCheckForAdvance()
         {

@@ -208,17 +208,20 @@ namespace ContractBridge.Tests.Core.Impl
                 eventRaised = true;
 
                 var trick = args.Trick;
+                var seat = args.Seat;
 
                 Assert.Multiple(() =>
                 {
-                    trick.Contains(_deck[Rank.Two, Suit.Clubs]);
-                    trick.Contains(_deck[Rank.Three, Suit.Clubs]);
-                    trick.Contains(_deck[Rank.Four, Suit.Clubs]);
-                    trick.Contains(_deck[Rank.Five, Suit.Clubs]);
+                    Assert.That(seat, Is.EqualTo(Seat.East));
+
+                    Assert.That(trick.Contains(_deck[Rank.Ace, Suit.Clubs]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Three, Suit.Clubs]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Four, Suit.Clubs]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Five, Suit.Clubs]), Is.True);
                 });
             };
 
-            _game.Follow(_board.Hand(Seat.East)[Rank.Two, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
