@@ -64,6 +64,7 @@
         <Compile Include="Core\Impl\Deck.cs"/>
         <Compile Include="Core\Impl\DeckFactory.cs"/>
         <Compile Include="Core\Impl\Game.cs"/>
+        <Compile Include="Core\Impl\GameFactory.cs"/>
         <Compile Include="Core\Impl\Hand.cs"/>
         <Compile Include="Core\Impl\HandFactory.cs"/>
         <Compile Include="Core\Impl\IAuctionFactory.cs"/>

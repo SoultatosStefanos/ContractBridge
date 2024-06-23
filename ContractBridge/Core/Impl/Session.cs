@@ -115,6 +115,7 @@ namespace ContractBridge.Core.Impl
 
             Game = _gameFactory.Create(Board);
             Game.TurnPlayContext.TurnSequence.Lead = Auction!.FinalContract!.Declarer.NextSeat();
+            Game.TrumpSuit = (TrumpSuit)Auction.FinalContract.Denomination;
             Game.TrickWon += OnTrickWon;
             Game.Done += OnGameDone;
         }

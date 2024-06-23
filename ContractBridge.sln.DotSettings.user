@@ -12,6 +12,7 @@
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.TurnSequenceTest&lt;/TestId&gt;
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.AuctionTest&lt;/TestId&gt;
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.GameTest&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.SessionTest&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d0cccda5_002Db59b_002D489b_002Db8d9_002D76dad57a4688/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="DeckTest #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
