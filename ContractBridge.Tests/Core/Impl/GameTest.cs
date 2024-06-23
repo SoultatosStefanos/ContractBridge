@@ -274,5 +274,97 @@ namespace ContractBridge.Tests.Core.Impl
 
             Assert.That(eventRaised, Is.True);
         }
+
+        [Test]
+        public void TrickWonTrumpingOneTrumpSuitCard()
+        {
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
+
+            var eventRaised = false;
+
+            _game.TrickWon += (sender, args) =>
+            {
+                eventRaised = true;
+
+                var trick = args.Trick;
+                var seat = args.Seat;
+
+                Assert.Multiple(() =>
+                {
+                    Assert.That(seat, Is.EqualTo(Seat.North));
+
+                    Assert.That(trick.Contains(_deck[Rank.Two, Suit.Clubs]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Two, Suit.Diamonds]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Three, Suit.Diamonds]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Three, Suit.Hearts]), Is.True);
+                });
+            };
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Two, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Two, Suit.Diamonds], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Three, Suit.Diamonds], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Three, Suit.Hearts], Seat.North);
+
+            Assert.That(eventRaised, Is.True);
+        }
+
+        [Test]
+        public void TrickWonTrumpingTwoTrumpSuitCards()
+        {
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
+
+            var eventRaised = false;
+
+            _game.TrickWon += (sender, args) =>
+            {
+                eventRaised = true;
+
+                var trick = args.Trick;
+                var seat = args.Seat;
+
+                Assert.Multiple(() =>
+                {
+                    Assert.That(seat, Is.EqualTo(Seat.West));
+
+                    Assert.That(trick.Contains(_deck[Rank.Two, Suit.Clubs]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Two, Suit.Diamonds]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Six, Suit.Hearts]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Three, Suit.Hearts]), Is.True);
+                });
+            };
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Two, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Two, Suit.Diamonds], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Six, Suit.Hearts], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Three, Suit.Hearts], Seat.North);
+
+            Assert.That(eventRaised, Is.True);
+        }
     }
 }

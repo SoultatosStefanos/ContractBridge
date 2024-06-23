@@ -117,17 +117,26 @@ namespace ContractBridge.Core.Impl
         {
             Debug.Assert(_playEntries.Count == 4);
 
-            var last4 = _playEntries.GetRange(_playEntries.Count - 4, 4);
+            var last4 = _playEntries.Skip(_playEntries.Count - 4).ToList();
+
+            var highestTrumpEntry = last4
+                .Where(entry => (byte)entry.Card.Suit == (int)TrumpSuit)
+                .OrderByDescending(entry => entry.Card.Rank)
+                .FirstOrDefault();
+
+            if (highestTrumpEntry != null)
+            {
+                return highestTrumpEntry.Seat;
+            }
 
             var leadSuit = _playEntries.First().Card.Suit;
 
-            // TODO More cases, this assumes that everyone followed suit
-            // TODO Check trump card
-            return last4
+            var highestLeadEntry = last4
                 .Where(entry => entry.Card.Suit == leadSuit) // Ignore discarded cards. 
                 .OrderByDescending(entry => entry.Card.Rank)
-                .FirstOrDefault()!
-                .Seat;
+                .First();
+
+            return highestLeadEntry.Seat;
         }
 
         private bool SaveFollowAndCheckForAdvance()
