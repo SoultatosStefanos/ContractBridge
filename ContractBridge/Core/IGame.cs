@@ -53,4 +53,17 @@ namespace ContractBridge.Core
             public Seat Seat { get; }
         }
     }
+
+    public static class GameExtensions
+    {
+        public static bool CanFollow(this IGame game, Rank rank, Suit suit, Seat seat)
+        {
+            return game.CanFollow(game.Board.Hand(seat)[rank, suit], seat);
+        }
+
+        public static void Follow(this IGame game, Rank rank, Suit suit, Seat seat)
+        {
+            game.Follow(game.Board.Hand(seat)[rank, suit], seat);
+        }
+    }
 }

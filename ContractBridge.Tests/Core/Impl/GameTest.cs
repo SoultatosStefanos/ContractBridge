@@ -19,13 +19,12 @@ namespace ContractBridge.Tests.Core.Impl
             _deck = new Deck(new CardFactory(), IDeck.Partition.BySuit);
             _deck.Deal(_board);
 
-            _game = new Game(
-                _board,
-                new TurnPlayContext(new TurnSequence(new TurnFactory())
-                {
-                    Lead = Seat.East
-                })
-            )
+            var turnPlayContext = new TurnPlayContext(new TurnSequence(new TurnFactory())
+            {
+                Lead = Seat.East
+            });
+
+            _game = new Game(_board, turnPlayContext, new TrickFactory())
             {
                 TrumpSuit = TrumpSuit.Hearts
             };
@@ -166,6 +165,65 @@ namespace ContractBridge.Tests.Core.Impl
                 Assert.That(_game.CanFollow(_board.Hand(Seat.South)[Rank.King, Suit.Hearts], Seat.South), Is.True);
                 Assert.That(_game.CanFollow(_board.Hand(Seat.South)[Rank.Queen, Suit.Spades], Seat.South), Is.True);
             });
+        }
+
+        [Test]
+        public void FollowWithAnyCardWhenCantFollowSuit()
+        {
+            _game.Follow(_board.Hand(Seat.East)[Rank.Two, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+
+            Assert.DoesNotThrow(() => { _game.Follow(_board.Hand(Seat.South)[Rank.Two, Suit.Diamonds], Seat.South); });
+        }
+
+        [Test]
+        public void FollowRaisesFollowedEvent()
+        {
+            var eventRaised = false;
+            _game.Followed += (sender, args) => eventRaised = true;
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Two, Suit.Clubs], Seat.East);
+
+            Assert.That(eventRaised, Is.True);
+        }
+
+        [Test]
+        public void TrickWonFollowSuit()
+        {
+            var eventRaised = false;
+
+            _game.TrickWon += (sender, args) =>
+            {
+                eventRaised = true;
+
+                var trick = args.Trick;
+
+                Assert.Multiple(() =>
+                {
+                    trick.Contains(_deck[Rank.Two, Suit.Clubs]);
+                    trick.Contains(_deck[Rank.Three, Suit.Clubs]);
+                    trick.Contains(_deck[Rank.Four, Suit.Clubs]);
+                    trick.Contains(_deck[Rank.Five, Suit.Clubs]);
+                });
+            };
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Two, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
+
+            Assert.That(eventRaised, Is.True);
         }
     }
 }
