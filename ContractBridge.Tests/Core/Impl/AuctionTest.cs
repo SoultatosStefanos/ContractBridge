@@ -11,7 +11,13 @@ namespace ContractBridge.Tests.Core.Impl
         [SetUp]
         public void SetUp()
         {
-            _auction = new Auction(new Board(new HandFactory()), new ContractFactory());
+            _auction = new Auction(
+                new TurnPlayContext(new TurnSequence(new TurnFactory())
+                {
+                    Lead = Seat.East
+                }),
+                new ContractFactory()
+            );
         }
 
         private Auction _auction;
@@ -23,94 +29,148 @@ namespace ContractBridge.Tests.Core.Impl
         }
 
         [Test]
+        public void CantCallOutOfTurn()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(_auction.CanCall(new Bid(Level.Five, Denomination.Clubs), Seat.North), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Five, Denomination.Clubs), Seat.West), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Five, Denomination.Clubs), Seat.South), Is.False);
+            });
+        }
+
+        [Test]
+        public void CantPassOutOfTurn()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(_auction.CanPass(Seat.North), Is.False);
+                Assert.That(_auction.CanPass(Seat.West), Is.False);
+                Assert.That(_auction.CanPass(Seat.South), Is.False);
+            });
+        }
+
+        [Test]
+        public void CantDoubleOutOfTurn()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(_auction.CanDouble(Seat.North), Is.False);
+                Assert.That(_auction.CanDouble(Seat.West), Is.False);
+                Assert.That(_auction.CanDouble(Seat.South), Is.False);
+            });
+        }
+
+        [Test]
+        public void CallOutOfTurnThrowsPlayOutOfTurnException()
+        {
+            Assert.Throws<PlayOutOfTurnException>(() =>
+            {
+                _auction.Call(new Bid(Level.Five, Denomination.NoTrumps), Seat.North);
+            });
+        }
+
+        [Test]
+        public void PassOutOfTurnThrowsPlayOutOfTurnException()
+        {
+            Assert.Throws<PlayOutOfTurnException>(() => { _auction.Pass(Seat.South); });
+        }
+
+        [Test]
+        public void DoubleOutOfTurnThrowsPlayOutOfTurnException()
+        {
+            Assert.Throws<PlayOutOfTurnException>(() => { _auction.Pass(Seat.West); });
+        }
+
+        [Test]
         public void CantCallWithLowerOrSameDenomination()
         {
-            _auction.Call(new Bid(Level.One, Denomination.NoTrumps), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.NoTrumps), Seat.East);
 
             Assert.Multiple(() =>
             {
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Diamonds), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Hearts), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Spades), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.NoTrumps), new Turn(Seat.West)), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Clubs), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Diamonds), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Hearts), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.NoTrumps), Seat.South), Is.False);
             });
         }
 
         [Test]
         public void CantCallWithLowerOrSameLevel()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Spades), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Spades), Seat.East);
 
             Assert.Multiple(() =>
             {
-                Assert.That(_auction.CanCall(new Bid(Level.Seven, Denomination.Spades), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.Six, Denomination.Spades), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.Five, Denomination.Spades), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.Spades), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.Three, Denomination.Spades), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.Two, Denomination.Spades), new Turn(Seat.West)), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Spades), new Turn(Seat.West)), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Seven, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Six, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Five, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Three, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Two, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Spades), Seat.South), Is.False);
             });
         }
 
         [Test]
         public void CanCallWithHigherDenomination()
         {
-            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.East);
 
             Assert.Multiple(() =>
             {
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Diamonds), new Turn(Seat.North)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Hearts), new Turn(Seat.West)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Spades), new Turn(Seat.South)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.NoTrumps), new Turn(Seat.North)), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Diamonds), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Hearts), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Spades), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.NoTrumps), Seat.South), Is.True);
             });
         }
 
         [Test]
         public void CanCallWithHigherLevel()
         {
-            _auction.Call(new Bid(Level.One, Denomination.NoTrumps), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.NoTrumps), Seat.East);
 
             Assert.Multiple(() =>
             {
-                Assert.That(_auction.CanCall(new Bid(Level.Two, Denomination.Clubs), new Turn(Seat.North)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.Three, Denomination.Clubs), new Turn(Seat.North)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.Clubs), new Turn(Seat.West)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.Five, Denomination.Clubs), new Turn(Seat.North)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.Six, Denomination.Clubs), new Turn(Seat.West)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.South)), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Two, Denomination.Clubs), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Three, Denomination.Clubs), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.Clubs), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Five, Denomination.Clubs), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Six, Denomination.Clubs), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Seven, Denomination.Clubs), Seat.South), Is.True);
             });
         }
 
         [Test]
         public void CanCallWithHigherLevelAndDenomination()
         {
-            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.East);
 
             Assert.Multiple(() =>
             {
-                Assert.That(_auction.CanCall(new Bid(Level.Two, Denomination.Hearts), new Turn(Seat.West)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.Three, Denomination.Spades), new Turn(Seat.North)), Is.True);
-                Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.NoTrumps), new Turn(Seat.West)), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Two, Denomination.Hearts), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Three, Denomination.Spades), Seat.South), Is.True);
+                Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.NoTrumps), Seat.South), Is.True);
             });
         }
 
         [Test]
         public void CallWithLowerOrSameDenominationThrowsAuctionCallTooLowException()
         {
-            _auction.Call(new Bid(Level.One, Denomination.NoTrumps), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.NoTrumps), Seat.East);
 
             Assert.Multiple(() =>
             {
                 Assert.Throws<AuctionCallTooLowException>(() =>
                 {
-                    _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.One, Denomination.Diamonds), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.One, Denomination.Hearts), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.One, Denomination.NoTrumps), new Turn(Seat.West));
+                    _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.South);
+                    _auction.Call(new Bid(Level.One, Denomination.Diamonds), Seat.South);
+                    _auction.Call(new Bid(Level.One, Denomination.Hearts), Seat.South);
+                    _auction.Call(new Bid(Level.One, Denomination.Spades), Seat.South);
+                    _auction.Call(new Bid(Level.One, Denomination.NoTrumps), Seat.South);
                 });
             });
         }
@@ -118,143 +178,129 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void CallWithLowerOrSameLevelThrowsAuctionCallTooLowException()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
             Assert.Multiple(() =>
             {
                 Assert.Throws<AuctionCallTooLowException>(() =>
                 {
-                    _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.Two, Denomination.Clubs), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.Three, Denomination.Clubs), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.Four, Denomination.Clubs), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.Five, Denomination.Clubs), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.Six, Denomination.Clubs), new Turn(Seat.West));
-                    _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.West));
+                    _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.South);
+                    _auction.Call(new Bid(Level.Two, Denomination.Clubs), Seat.South);
+                    _auction.Call(new Bid(Level.Three, Denomination.Clubs), Seat.South);
+                    _auction.Call(new Bid(Level.Four, Denomination.Clubs), Seat.South);
+                    _auction.Call(new Bid(Level.Five, Denomination.Clubs), Seat.South);
+                    _auction.Call(new Bid(Level.Six, Denomination.Clubs), Seat.South);
+                    _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.South);
                 });
             });
         }
 
         [Test]
-        public void CallThenCanPassFromAll()
+        public void CallThenCanPass()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
-            Assert.Multiple(() =>
-            {
-                _auction.CanPass(new Turn(Seat.West));
-                _auction.CanPass(new Turn(Seat.North));
-                _auction.CanPass(new Turn(Seat.South));
-            });
+            Assert.That(_auction.CanPass(Seat.South), Is.True);
         }
 
         [Test]
         public void CallThenPassFromAll()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
             Assert.DoesNotThrow(() =>
             {
-                _auction.Pass(new Turn(Seat.West));
-                _auction.Pass(new Turn(Seat.North));
-                _auction.Pass(new Turn(Seat.South));
+                _auction.Pass(Seat.South);
+                _auction.Pass(Seat.West);
+                _auction.Pass(Seat.North);
             });
         }
 
         [Test]
         public void CantDoubleOnPartner()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
+            _auction.Pass(Seat.South);
 
-            Assert.That(_auction.CanDouble(new Turn(Seat.West)), Is.False);
+            Assert.That(_auction.CanDouble(Seat.West), Is.False);
         }
 
         [Test]
         public void DoubleOnPartnerThrowsAuctionDoubleOnPartnerException()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
+            _auction.Pass(Seat.South);
 
-            Assert.Throws<AuctionDoubleOnPartnerException>(() => { _auction.Double(new Turn(Seat.West)); });
+            Assert.Throws<AuctionDoubleOnPartnerException>(() => { _auction.Double(Seat.West); });
         }
 
         [Test]
         public void CantDoubleBeforeCall()
         {
-            Assert.That(_auction.CanDouble(new Turn(Seat.West)), Is.False);
+            Assert.That(_auction.CanDouble(Seat.East), Is.False);
         }
 
         [Test]
         public void DoubleBeforeCallThrowsAuctionDoubleBeforeCallException()
         {
-            Assert.Throws<AuctionDoubleBeforeCallException>(() => { _auction.Double(new Turn(Seat.East)); });
+            Assert.Throws<AuctionDoubleBeforeCallException>(() => { _auction.Double(Seat.East); });
         }
 
         [Test]
         public void CanDoubleOnOpponent()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(_auction.CanDouble(new Turn(Seat.North)), Is.True);
-                Assert.That(_auction.CanDouble(new Turn(Seat.South)), Is.True);
-            });
+            Assert.That(_auction.CanDouble(Seat.South), Is.True);
         }
 
         [Test]
         public void DoubleOnOpponent()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
-            Assert.DoesNotThrow(() => { _auction.Double(new Turn(Seat.North)); });
+            Assert.DoesNotThrow(() => { _auction.Double(Seat.South); });
         }
 
         [Test]
         public void CanReDoubleOnOpponent()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
-            _auction.Double(new Turn(Seat.North));
+            _auction.Double(Seat.South);
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(_auction.CanDouble(new Turn(Seat.East)), Is.True);
-                Assert.That(_auction.CanDouble(new Turn(Seat.West)), Is.True);
-            });
+            Assert.That(_auction.CanDouble(Seat.West), Is.True);
         }
 
         [Test]
         public void ReDoubleOnOpponent()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
-            _auction.Double(new Turn(Seat.North));
+            _auction.Double(Seat.South);
 
-            Assert.DoesNotThrow(() => { _auction.Double(new Turn(Seat.South)); });
+            Assert.DoesNotThrow(() => { _auction.Double(Seat.West); });
         }
 
         [Test]
         public void CantReReDoubleOnOpponent()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
+            _auction.Double(Seat.South);
+            _auction.Double(Seat.West);
 
-            _auction.Double(new Turn(Seat.North));
-
-            _auction.Double(new Turn(Seat.West));
-
-            Assert.That(_auction.CanDouble(new Turn(Seat.West)), Is.False);
+            Assert.That(_auction.CanDouble(Seat.East), Is.False);
         }
 
         [Test]
         public void ReReDoubleThrowsAuctionReReDoubleException()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
+            _auction.Double(Seat.South);
+            _auction.Double(Seat.West);
+            _auction.Pass(Seat.North);
 
-            _auction.Double(new Turn(Seat.North));
-
-            _auction.Double(new Turn(Seat.West));
-
-            Assert.Throws<AuctionReReDoubleException>(() => { _auction.Double(new Turn(Seat.North)); });
+            Assert.Throws<AuctionReReDoubleException>(() => { _auction.Double(Seat.East); });
         }
 
         [Test]
@@ -263,7 +309,7 @@ namespace ContractBridge.Tests.Core.Impl
             var eventRaised = false;
             _auction.Called += (sender, args) => eventRaised = true;
 
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
             Assert.That(eventRaised, Is.True);
         }
@@ -274,7 +320,7 @@ namespace ContractBridge.Tests.Core.Impl
             var eventRaised = false;
             _auction.Passed += (sender, args) => eventRaised = true;
 
-            _auction.Pass(new Turn(Seat.East));
+            _auction.Pass(Seat.East);
 
             Assert.That(eventRaised, Is.True);
         }
@@ -285,9 +331,8 @@ namespace ContractBridge.Tests.Core.Impl
             var eventRaised = false;
             _auction.Doubled += (sender, args) => eventRaised = true;
 
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
-
-            _auction.Double(new Turn(Seat.North));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
+            _auction.Double(Seat.South);
 
             Assert.That(eventRaised, Is.True);
         }
@@ -298,11 +343,9 @@ namespace ContractBridge.Tests.Core.Impl
             var eventRaised = false;
             _auction.Redoubled += (sender, args) => eventRaised = true;
 
-            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), new Turn(Seat.East));
-
-            _auction.Double(new Turn(Seat.North));
-
-            _auction.Double(new Turn(Seat.West));
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
+            _auction.Double(Seat.South);
+            _auction.Double(Seat.West);
 
             Assert.That(eventRaised, Is.True);
         }
@@ -313,10 +356,10 @@ namespace ContractBridge.Tests.Core.Impl
             var eventRaised = false;
             _auction.FinalContractMade += (sender, args) => eventRaised = true;
 
-            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
-            _auction.Pass(new Turn(Seat.North));
-            _auction.Pass(new Turn(Seat.South));
-            _auction.Pass(new Turn(Seat.West));
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.East);
+            _auction.Pass(Seat.South);
+            _auction.Pass(Seat.West);
+            _auction.Pass(Seat.North);
 
             Assert.That(eventRaised, Is.True);
         }
@@ -324,10 +367,10 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void FinalContractOneBid()
         {
-            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
-            _auction.Pass(new Turn(Seat.North));
-            _auction.Pass(new Turn(Seat.South));
-            _auction.Pass(new Turn(Seat.West));
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.East);
+            _auction.Pass(Seat.South);
+            _auction.Pass(Seat.West);
+            _auction.Pass(Seat.North);
 
             Assert.That(
                 _auction.FinalContract,
@@ -338,11 +381,11 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void FinalContractOverCall()
         {
-            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
-            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.South));
-            _auction.Pass(new Turn(Seat.West));
-            _auction.Pass(new Turn(Seat.North));
-            _auction.Pass(new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.East);
+            _auction.Call(new Bid(Level.One, Denomination.Spades), Seat.South);
+            _auction.Pass(Seat.West);
+            _auction.Pass(Seat.North);
+            _auction.Pass(Seat.East);
 
             Assert.That(
                 _auction.FinalContract,
@@ -353,12 +396,12 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void FinalContractTwoOverCalls()
         {
-            _auction.Call(new Bid(Level.One, Denomination.Clubs), new Turn(Seat.East));
-            _auction.Call(new Bid(Level.One, Denomination.Spades), new Turn(Seat.South));
-            _auction.Call(new Bid(Level.Two, Denomination.Spades), new Turn(Seat.West));
-            _auction.Pass(new Turn(Seat.North));
-            _auction.Pass(new Turn(Seat.East));
-            _auction.Pass(new Turn(Seat.South));
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.East);
+            _auction.Call(new Bid(Level.One, Denomination.Spades), Seat.South);
+            _auction.Call(new Bid(Level.Two, Denomination.Spades), Seat.West);
+            _auction.Pass(Seat.North);
+            _auction.Pass(Seat.East);
+            _auction.Pass(Seat.South);
 
             Assert.That(
                 _auction.FinalContract,
@@ -369,33 +412,33 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void FinalContractDoubled()
         {
-            _auction.Call(new Bid(Level.One, Denomination.Hearts), new Turn(Seat.West));
-            _auction.Pass(new Turn(Seat.North));
-            _auction.Call(new Bid(Level.Four, Denomination.Hearts), new Turn(Seat.East));
-            _auction.Double(new Turn(Seat.South));
-            _auction.Pass(new Turn(Seat.West));
-            _auction.Pass(new Turn(Seat.North));
-            _auction.Pass(new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.Hearts), Seat.East);
+            _auction.Pass(Seat.South);
+            _auction.Call(new Bid(Level.Four, Denomination.Hearts), Seat.West);
+            _auction.Double(Seat.North);
+            _auction.Pass(Seat.East);
+            _auction.Pass(Seat.South);
+            _auction.Pass(Seat.West);
 
             Assert.That(
                 _auction.FinalContract,
-                Is.EqualTo(new Contract(Level.Four, Denomination.Hearts, Seat.South, Risk.Doubled))
+                Is.EqualTo(new Contract(Level.Four, Denomination.Hearts, Seat.North, Risk.Doubled))
             );
         }
 
         [Test]
         public void FinalContractRedoubled()
         {
-            _auction.Call(new Bid(Level.One, Denomination.Hearts), new Turn(Seat.North));
-            _auction.Double(new Turn(Seat.East));
-            _auction.Double(new Turn(Seat.South));
-            _auction.Pass(new Turn(Seat.West));
-            _auction.Pass(new Turn(Seat.North));
-            _auction.Pass(new Turn(Seat.East));
+            _auction.Call(new Bid(Level.One, Denomination.Hearts), Seat.East);
+            _auction.Double(Seat.South);
+            _auction.Double(Seat.West);
+            _auction.Pass(Seat.North);
+            _auction.Pass(Seat.East);
+            _auction.Pass(Seat.South);
 
             Assert.That(
                 _auction.FinalContract,
-                Is.EqualTo(new Contract(Level.One, Denomination.Hearts, Seat.South, Risk.Redoubled))
+                Is.EqualTo(new Contract(Level.One, Denomination.Hearts, Seat.West, Risk.Redoubled))
             );
         }
 
@@ -405,10 +448,10 @@ namespace ContractBridge.Tests.Core.Impl
             var eventRaised = false;
             _auction.PassedOut += (sender, args) => eventRaised = true;
 
-            _auction.Pass(new Turn(Seat.East));
-            _auction.Pass(new Turn(Seat.North));
-            _auction.Pass(new Turn(Seat.South));
-            _auction.Pass(new Turn(Seat.West));
+            _auction.Pass(Seat.East);
+            _auction.Pass(Seat.South);
+            _auction.Pass(Seat.West);
+            _auction.Pass(Seat.North);
 
             Assert.Multiple(() =>
             {

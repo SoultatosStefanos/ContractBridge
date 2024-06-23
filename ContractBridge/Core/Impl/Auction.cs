@@ -75,127 +75,143 @@ namespace ContractBridge.Core.Impl
 
         private readonly int _requiredPassCountToAdvance = Enum.GetNames(typeof(Seat)).Length - 1;
 
+        private readonly ITurnPlayContext _turnPlayContext;
+
         private int _passCount;
 
-        public Auction(IBoard board, IContractFactory contractFactory)
+        public Auction(ITurnPlayContext turnPlayContext, IContractFactory contractFactory)
         {
-            Board = board;
+            _turnPlayContext = turnPlayContext;
             _contractFactory = contractFactory;
         }
-
-        public IBoard Board { get; }
 
         public IContract? FinalContract { get; private set; }
 
         public IEnumerable<IBid> AllBids => _bidEntries.Select(entry => entry.Bid);
 
-        public bool CanCall(IBid bid, ITurn turn)
+        public bool CanCall(IBid bid, Seat seat)
         {
-            if (LastBidEntry() is not var (lastBid, _, _)) // Entry call.
+            return _turnPlayContext.CanPlayTurn(seat, () =>
             {
-                return true;
-            }
-
-            return !IsCallTooLow(bid, lastBid);
-        }
-
-        public bool CanPass(ITurn turn)
-        {
-            return true;
-        }
-
-        public bool CanDouble(ITurn turn)
-        {
-            if (LastBidEntry() is not { } lastBidEntry)
-            {
-                return false;
-            }
-
-            var (_, lastBidSeat, _) = lastBidEntry;
-
-            if (lastBidEntry.IsRedoubled())
-            {
-                return false;
-            }
-
-            if (lastBidSeat.Partnership() == turn.Seat.Partnership())
-            {
-                return lastBidEntry.IsDoubled(); // Redouble chance.
-            }
-
-            return !lastBidEntry.IsDoubled();
-        }
-
-        public void Call(IBid bid, ITurn turn)
-        {
-            if (LastBidEntry() is var (lastBid, _, _))
-            {
-                if (IsCallTooLow(bid, lastBid))
+                if (LastBidEntry() is not var (lastBid, _, _)) // Entry call.
                 {
-                    throw new AuctionCallTooLowException();
-                }
-            }
-
-            _bidEntries.Add(new BidEntry(bid, turn.Seat));
-
-            turn.MarkPlayed();
-            RaiseCalledEvent(bid, turn);
-
-            _passCount = 0;
-        }
-
-        public void Pass(ITurn turn)
-        {
-            turn.MarkPlayed();
-            RaisePassedEvent(turn);
-
-            if (LastBidEntry() is { } lastBidEntry)
-            {
-                if (!SavePassAndCheckForAdvance())
-                {
-                    return;
+                    return true;
                 }
 
-                FinalContract = MakeFinalContract(lastBidEntry);
-                RaiseFinalContractMade(FinalContract);
-            }
-            else
-            {
-                if (SavePassAndCheckForAdvance())
-                {
-                    RaisePassedOutEvent();
-                }
-            }
+                return !IsCallTooLow(bid, lastBid);
+            });
         }
 
-        public void Double(ITurn turn)
+        public bool CanPass(Seat seat)
         {
-            if (LastBidEntry() is not { } lastBidEntry)
-            {
-                throw new AuctionDoubleBeforeCallException();
-            }
+            return _turnPlayContext.CanPlayTurn(seat, () => true);
+        }
 
-            var (_, lastBidSeat, _) = lastBidEntry;
-
-            if (lastBidSeat.Partnership() == turn.Seat.Partnership())
+        public bool CanDouble(Seat seat)
+        {
+            return _turnPlayContext.CanPlayTurn(seat, () =>
             {
-                if (!lastBidEntry.IsDoubled())
+                if (LastBidEntry() is not { } lastBidEntry)
                 {
-                    throw new AuctionDoubleOnPartnerException();
+                    return false;
                 }
 
-                lastBidEntry.Double(turn.Seat);
-                turn.MarkPlayed();
-                RaiseRedoubledEvent(turn);
-            }
-            else
-            {
-                lastBidEntry.Double(turn.Seat);
-                turn.MarkPlayed();
-                RaiseDoubledEvent(turn);
-            }
+                var (_, lastBidSeat, _) = lastBidEntry;
 
-            _passCount = 0;
+                if (lastBidEntry.IsRedoubled())
+                {
+                    return false;
+                }
+
+                if (lastBidSeat.Partnership() == seat.Partnership())
+                {
+                    return lastBidEntry.IsDoubled(); // Redouble chance.
+                }
+
+                return !lastBidEntry.IsDoubled();
+            });
+        }
+
+        public void Call(IBid bid, Seat seat)
+        {
+            _turnPlayContext.PlayTurn(seat, () =>
+            {
+                if (LastBidEntry() is var (lastBid, _, _))
+                {
+                    if (IsCallTooLow(bid, lastBid))
+                    {
+                        throw new AuctionCallTooLowException();
+                    }
+                }
+
+                _bidEntries.Add(new BidEntry(bid, seat));
+
+                RaiseCalledEvent(bid, seat);
+
+                _passCount = 0;
+            });
+        }
+
+        public void Pass(Seat seat)
+        {
+            _turnPlayContext.PlayTurn(seat, () =>
+            {
+                RaisePassedEvent(seat);
+
+                if (LastBidEntry() is { } lastBidEntry)
+                {
+                    if (!SavePassAndCheckForAdvance())
+                    {
+                        return;
+                    }
+
+                    FinalContract = MakeFinalContract(lastBidEntry);
+                    RaiseFinalContractMade(FinalContract);
+                }
+                else
+                {
+                    if (SavePassAndCheckForAdvance())
+                    {
+                        RaisePassedOutEvent();
+                    }
+                }
+            });
+        }
+
+        public void Double(Seat seat)
+        {
+            _turnPlayContext.PlayTurn(seat, () =>
+            {
+                if (LastBidEntry() is not { } lastBidEntry)
+                {
+                    throw new AuctionDoubleBeforeCallException();
+                }
+
+                var (_, lastBidSeat, _) = lastBidEntry;
+
+                if (lastBidSeat.Partnership() == seat.Partnership())
+                {
+                    if (lastBidEntry.IsRedoubled())
+                    {
+                        throw new AuctionReReDoubleException();
+                    }
+
+                    if (!lastBidEntry.IsDoubled())
+                    {
+                        throw new AuctionDoubleOnPartnerException();
+                    }
+
+                    lastBidEntry.Double(seat);
+                    RaiseRedoubledEvent(seat);
+                }
+                else
+                {
+                    lastBidEntry.Double(seat);
+                    RaiseDoubledEvent(seat);
+                }
+
+                _passCount = 0;
+            });
         }
 
         public event EventHandler<IAuction.CallEventArgs>? Called;
@@ -230,24 +246,24 @@ namespace ContractBridge.Core.Impl
             FinalContractMade?.Invoke(this, new IAuction.ContractEventArgs(finalContract));
         }
 
-        private void RaiseCalledEvent(IBid bid, ITurn turn)
+        private void RaiseCalledEvent(IBid bid, Seat seat)
         {
-            Called?.Invoke(this, new IAuction.CallEventArgs(bid, turn));
+            Called?.Invoke(this, new IAuction.CallEventArgs(bid, seat));
         }
 
-        private void RaisePassedEvent(ITurn turn)
+        private void RaisePassedEvent(Seat seat)
         {
-            Passed?.Invoke(this, new IAuction.PassEventArgs(turn));
+            Passed?.Invoke(this, new IAuction.PassEventArgs(seat));
         }
 
-        private void RaiseRedoubledEvent(ITurn turn)
+        private void RaiseRedoubledEvent(Seat seat)
         {
-            Redoubled?.Invoke(this, new IAuction.RedoubleEventArgs(turn));
+            Redoubled?.Invoke(this, new IAuction.RedoubleEventArgs(seat));
         }
 
-        private void RaiseDoubledEvent(ITurn turn)
+        private void RaiseDoubledEvent(Seat seat)
         {
-            Doubled?.Invoke(this, new IAuction.DoubleEventArgs(turn));
+            Doubled?.Invoke(this, new IAuction.DoubleEventArgs(seat));
         }
 
         private void RaisePassedOutEvent()

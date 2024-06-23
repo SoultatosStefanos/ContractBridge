@@ -25,23 +25,21 @@ namespace ContractBridge.Core
 
     public interface IAuction
     {
-        IBoard Board { get; }
-
         IContract? FinalContract { get; }
 
         IEnumerable<IBid> AllBids { get; }
 
-        bool CanCall(IBid bid, ITurn turn);
+        bool CanCall(IBid bid, Seat seat);
 
-        bool CanPass(ITurn turn);
+        bool CanPass(Seat seat);
 
-        bool CanDouble(ITurn turn);
+        bool CanDouble(Seat seat);
 
-        void Call(IBid bid, ITurn turn);
+        void Call(IBid bid, Seat seat);
 
-        void Pass(ITurn turn);
+        void Pass(Seat seat);
 
-        void Double(ITurn turn);
+        void Double(Seat seat);
 
         event EventHandler<CallEventArgs> Called;
 
@@ -57,45 +55,45 @@ namespace ContractBridge.Core
 
         public sealed class CallEventArgs : EventArgs
         {
-            public CallEventArgs(IBid bid, ITurn turn)
+            public CallEventArgs(IBid bid, Seat seat)
             {
                 Bid = bid;
-                Turn = turn;
+                Seat = seat;
             }
 
             public IBid Bid { get; }
 
-            public ITurn Turn { get; }
+            public Seat Seat { get; }
         }
 
         public sealed class PassEventArgs : EventArgs
         {
-            public PassEventArgs(ITurn turn)
+            public PassEventArgs(Seat seat)
             {
-                Turn = turn;
+                Seat = seat;
             }
 
-            public ITurn Turn { get; }
+            public Seat Seat { get; }
         }
 
         public sealed class DoubleEventArgs : EventArgs
         {
-            public DoubleEventArgs(ITurn turn)
+            public DoubleEventArgs(Seat seat)
             {
-                Turn = turn;
+                Seat = seat;
             }
 
-            public ITurn Turn { get; }
+            public Seat Seat { get; }
         }
 
         public sealed class RedoubleEventArgs : EventArgs
         {
-            public RedoubleEventArgs(ITurn turn)
+            public RedoubleEventArgs(Seat seat)
             {
-                Turn = turn;
+                Seat = seat;
             }
 
-            public ITurn Turn { get; }
+            public Seat Seat { get; }
         }
 
         public sealed class ContractEventArgs : EventArgs
