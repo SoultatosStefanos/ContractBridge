@@ -4,16 +4,14 @@ namespace ContractBridge.Core.Impl
 {
     public class TurnPlayContext : ITurnPlayContext
     {
-        private readonly ITurnSequence _turnSequence;
-
         public TurnPlayContext(ITurnSequence turnSequence)
         {
-            _turnSequence = turnSequence;
+            TurnSequence = turnSequence;
         }
 
         public void PlayTurn(Seat seat, Action action)
         {
-            if (_turnSequence.NextTurn() is not { } turn)
+            if (TurnSequence.NextTurn() is not { } turn)
             {
                 throw new PlayOutOfTurnException();
             }
@@ -27,9 +25,11 @@ namespace ContractBridge.Core.Impl
             turn.MarkPlayed();
         }
 
+        public ITurnSequence TurnSequence { get; }
+
         public bool CanPlayTurn(Seat seat, Func<bool> pred)
         {
-            if (_turnSequence.NextTurn() is not { } turn)
+            if (TurnSequence.NextTurn() is not { } turn)
             {
                 return false;
             }

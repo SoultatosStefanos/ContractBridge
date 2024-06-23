@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
+    public class UnknownPairException : Exception
+    {
+    }
+
     public interface ISession
     {
         Phase Phase { get; }
@@ -11,13 +15,9 @@ namespace ContractBridge.Core
 
         IBoard Board { get; }
 
-        ITurnSequence TurnSequence { get; }
-
         IAuction? Auction { get; }
 
         IGame? Game { get; }
-
-        IScoring? Scoring { get; }
 
         IEnumerable<IPair> Pairs { get; }
 

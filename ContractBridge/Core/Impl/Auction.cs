@@ -75,13 +75,11 @@ namespace ContractBridge.Core.Impl
 
         private readonly int _requiredPassCountToAdvance = Enum.GetNames(typeof(Seat)).Length - 1;
 
-        private readonly ITurnPlayContext _turnPlayContext;
-
         private int _passCount;
 
         public Auction(ITurnPlayContext turnPlayContext, IContractFactory contractFactory)
         {
-            _turnPlayContext = turnPlayContext;
+            TurnPlayContext = turnPlayContext;
             _contractFactory = contractFactory;
         }
 
@@ -89,9 +87,11 @@ namespace ContractBridge.Core.Impl
 
         public IEnumerable<IBid> AllBids => _bidEntries.Select(entry => entry.Bid);
 
+        public ITurnPlayContext TurnPlayContext { get; }
+
         public bool CanCall(IBid bid, Seat seat)
         {
-            return _turnPlayContext.CanPlayTurn(seat, () =>
+            return TurnPlayContext.CanPlayTurn(seat, () =>
             {
                 if (LastBidEntry() is not var (lastBid, _, _)) // Entry call.
                 {
@@ -104,12 +104,12 @@ namespace ContractBridge.Core.Impl
 
         public bool CanPass(Seat seat)
         {
-            return _turnPlayContext.CanPlayTurn(seat, () => true);
+            return TurnPlayContext.CanPlayTurn(seat, () => true);
         }
 
         public bool CanDouble(Seat seat)
         {
-            return _turnPlayContext.CanPlayTurn(seat, () =>
+            return TurnPlayContext.CanPlayTurn(seat, () =>
             {
                 if (LastBidEntry() is not { } lastBidEntry)
                 {
@@ -134,7 +134,7 @@ namespace ContractBridge.Core.Impl
 
         public void Call(IBid bid, Seat seat)
         {
-            _turnPlayContext.PlayTurn(seat, () =>
+            TurnPlayContext.PlayTurn(seat, () =>
             {
                 if (LastBidEntry() is var (lastBid, _, _))
                 {
@@ -154,7 +154,7 @@ namespace ContractBridge.Core.Impl
 
         public void Pass(Seat seat)
         {
-            _turnPlayContext.PlayTurn(seat, () =>
+            TurnPlayContext.PlayTurn(seat, () =>
             {
                 RaisePassedEvent(seat);
 
@@ -180,7 +180,7 @@ namespace ContractBridge.Core.Impl
 
         public void Double(Seat seat)
         {
-            _turnPlayContext.PlayTurn(seat, () =>
+            TurnPlayContext.PlayTurn(seat, () =>
             {
                 if (LastBidEntry() is not { } lastBidEntry)
                 {

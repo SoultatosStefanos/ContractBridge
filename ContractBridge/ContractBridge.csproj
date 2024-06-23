@@ -81,14 +81,17 @@
         <Compile Include="Core\Impl\ISessionFactory.cs"/>
         <Compile Include="Core\Impl\ITrickFactory.cs"/>
         <Compile Include="Core\Impl\ITurnFactory.cs"/>
+        <Compile Include="Core\Impl\ITurnPlayContextFactory.cs"/>
         <Compile Include="Core\Impl\ITurnSequenceFactory.cs"/>
         <Compile Include="Core\Impl\Pair.cs"/>
         <Compile Include="Core\Impl\PairFactory.cs"/>
+        <Compile Include="Core\Impl\Session.cs"/>
         <Compile Include="Core\Impl\Trick.cs"/>
         <Compile Include="Core\Impl\TrickFactory.cs"/>
         <Compile Include="Core\Impl\Turn.cs"/>
         <Compile Include="Core\Impl\TurnFactory.cs"/>
         <Compile Include="Core\Impl\TurnPlayContext.cs"/>
+        <Compile Include="Core\Impl\TurnPlayContextFactory.cs"/>
         <Compile Include="Core\Impl\TurnSequence.cs"/>
         <Compile Include="Core\IPair.cs"/>
         <Compile Include="Core\IScoring.cs"/>

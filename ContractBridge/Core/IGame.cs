@@ -15,6 +15,8 @@ namespace ContractBridge.Core
 
         IEnumerable<ICard> AllPlayedCards { get; }
 
+        ITurnPlayContext TurnPlayContext { get; }
+
         bool CanFollow(ICard card, Seat seat);
 
         bool CanFollow(Seat seat);

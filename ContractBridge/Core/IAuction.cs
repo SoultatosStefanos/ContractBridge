@@ -29,6 +29,8 @@ namespace ContractBridge.Core
 
         IEnumerable<IBid> AllBids { get; }
 
+        ITurnPlayContext TurnPlayContext { get; }
+
         bool CanCall(IBid bid, Seat seat);
 
         bool CanPass(Seat seat);

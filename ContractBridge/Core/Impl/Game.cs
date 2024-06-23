@@ -32,14 +32,12 @@ namespace ContractBridge.Core.Impl
 
         private readonly ITrickFactory _trickFactory;
 
-        private readonly ITurnPlayContext _turnPlayContext;
-
         private int _followCount;
 
         public Game(IBoard board, ITurnPlayContext turnPlayContext, ITrickFactory trickFactory)
         {
             Board = board;
-            _turnPlayContext = turnPlayContext;
+            TurnPlayContext = turnPlayContext;
             _trickFactory = trickFactory;
         }
 
@@ -48,6 +46,8 @@ namespace ContractBridge.Core.Impl
         public TrumpSuit TrumpSuit { get; set; }
 
         public IEnumerable<ICard> AllPlayedCards => _playEntries.Select(entry => entry.Card);
+
+        public ITurnPlayContext TurnPlayContext { get; }
 
         public bool CanFollow(ICard card, Seat seat)
         {
@@ -58,7 +58,7 @@ namespace ContractBridge.Core.Impl
                 throw new CardNotInHandException();
             }
 
-            return _turnPlayContext.CanPlayTurn(seat, () =>
+            return TurnPlayContext.CanPlayTurn(seat, () =>
             {
                 if (LastPlayEntry() is not var (lastPlayCard, _))
                 {
@@ -76,7 +76,7 @@ namespace ContractBridge.Core.Impl
 
         public bool CanFollow(Seat seat)
         {
-            return _turnPlayContext.CanPlayTurn(seat, () => true);
+            return TurnPlayContext.CanPlayTurn(seat, () => true);
         }
 
         public void Follow(ICard card, Seat seat)
@@ -88,7 +88,7 @@ namespace ContractBridge.Core.Impl
                 throw new CardNotInHandException();
             }
 
-            _turnPlayContext.PlayTurn(seat, () =>
+            TurnPlayContext.PlayTurn(seat, () =>
             {
                 _playEntries.Add(new PlayEntry(card, seat));
                 seatHand.Remove(card);
