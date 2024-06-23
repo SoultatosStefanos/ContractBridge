@@ -228,5 +228,51 @@ namespace ContractBridge.Tests.Core.Impl
 
             Assert.That(eventRaised, Is.True);
         }
+
+        [Test]
+        public void TrickWonDiscarding()
+        {
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
+
+            var eventRaised = false;
+
+            _game.TrickWon += (sender, args) =>
+            {
+                eventRaised = true;
+
+                var trick = args.Trick;
+                var seat = args.Seat;
+
+                Assert.Multiple(() =>
+                {
+                    Assert.That(seat, Is.EqualTo(Seat.East));
+
+                    Assert.That(trick.Contains(_deck[Rank.Two, Suit.Clubs]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Two, Suit.Diamonds]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Three, Suit.Diamonds]), Is.True);
+                    Assert.That(trick.Contains(_deck[Rank.Four, Suit.Diamonds]), Is.True);
+                });
+            };
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Two, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Two, Suit.Diamonds], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Three, Suit.Diamonds], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Four, Suit.Diamonds], Seat.North);
+
+            Assert.That(eventRaised, Is.True);
+        }
     }
 }

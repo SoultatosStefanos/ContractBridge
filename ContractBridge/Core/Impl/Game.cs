@@ -102,6 +102,8 @@ namespace ContractBridge.Core.Impl
 
                     RaiseTrickWonEvent(trick, trickWinner);
 
+                    _followCount = 0;
+
                     // TODO Check for empty hands
                 }
             });
@@ -117,9 +119,12 @@ namespace ContractBridge.Core.Impl
 
             var last4 = _playEntries.GetRange(_playEntries.Count - 4, 4);
 
+            var leadSuit = _playEntries.First().Card.Suit;
+
             // TODO More cases, this assumes that everyone followed suit
             // TODO Check trump card
             return last4
+                .Where(entry => entry.Card.Suit == leadSuit) // Ignore discarded cards. 
                 .OrderByDescending(entry => entry.Card.Rank)
                 .FirstOrDefault()!
                 .Seat;
