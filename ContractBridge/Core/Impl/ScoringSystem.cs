@@ -1,19 +1,17 @@
 namespace ContractBridge.Core.Impl
 {
+    // FIXME
+
     public class ScoringSystem : IScoringSystem
     {
         private const int MinorSuitPoints = 20;
         private const int MajorSuitPoints = 30;
         private const int NoTrumpFirstTrickPoints = 40;
-        private const int RedoubledOvertrickNonVulnerable = 200;
-        private const int RedoubledOvertrickVulnerable = 400;
+        private const int OvertrickMinorSuit = 20;
+        private const int OvertrickMajorSuit = 30;
+        private const int OvertrickNoTrump = 30;
         private const int DoubledOvertrickNonVulnerable = 100;
         private const int DoubledOvertrickVulnerable = 200;
-        private const int OvertrickPoints = 30;
-        private const int RedoubledUndertrickNonVulnerable = 400;
-        private const int RedoubledUndertrickVulnerable = 800;
-        private const int DoubledUndertrickNonVulnerable = 100;
-        private const int DoubledUndertrickVulnerable = 200;
         private const int UndertrickNonVulnerable = 50;
         private const int UndertrickVulnerable = 100;
         private const int PartScoreBonus = 50;
@@ -23,120 +21,100 @@ namespace ContractBridge.Core.Impl
         private const int SmallSlamVulnerable = 750;
         private const int GrandSlamNonVulnerable = 1000;
         private const int GrandSlamVulnerable = 1500;
-        private const int RedoublingBonus = 100;
         private const int DoublingBonus = 50;
+        private const int RedoublingBonus = 100;
 
         public (int DeclarerScore, int DefenderScore) Score(IContract contract, bool vulnerable, int tricksMade)
         {
-            var baseContractPoints = CalculateBaseContractPoints(contract);
+            var contractPoints = CalculateContractPoints(contract);
             var overtrickPoints = CalculateOvertrickPoints(contract, vulnerable, tricksMade);
-            var undertrickPenalties = CalculateUndertrickPenalties(contract, vulnerable, tricksMade);
-            var gameBonus = CalculateGameBonus(baseContractPoints, vulnerable);
-            var partScoreBonus = CalculatePartScoreBonus(baseContractPoints);
+            var undertrickPoints = CalculateUndertrickPoints(contract, vulnerable, tricksMade);
+            var gameBonus = CalculateGameBonus(contractPoints, vulnerable);
+            var partScoreBonus = contractPoints < 100 ? PartScoreBonus : 0;
             var slamBonus = CalculateSlamBonus(contract, vulnerable);
             var doublingBonus = CalculateDoublingBonus(contract);
 
-            var declarerScore = DeclarerScore();
-            var defenderScore = DefenderScore();
+            // For doubled contracts, we add the doubling bonus separately after calculating the contract points.
+            var declarerScore = contractPoints + overtrickPoints + gameBonus + partScoreBonus + slamBonus +
+                                doublingBonus;
+            var defenderScore = undertrickPoints;
 
             return (declarerScore, defenderScore);
-
-            int DeclarerScore()
-            {
-                var ret = baseContractPoints + overtrickPoints + gameBonus + partScoreBonus + slamBonus + doublingBonus;
-                return contract.Tricks() - tricksMade > 0 ? ret : 0;
-            }
-
-            int DefenderScore()
-            {
-                return contract.Tricks() - tricksMade <= 0 ? undertrickPenalties : 0;
-            }
         }
 
-        private static int CalculateBaseContractPoints(IContract contract)
+        private static int CalculateContractPoints(IContract contract)
         {
             var basePointsPerTrick = contract.Denomination switch
             {
-                var d when d.IsMajor() => MajorSuitPoints,
-                var d when d.IsMinor() => MinorSuitPoints,
-                _ => MajorSuitPoints
+                Denomination.Spades or Denomination.Hearts => MajorSuitPoints,
+                Denomination.Clubs or Denomination.Diamonds => MinorSuitPoints,
+                Denomination.NoTrumps => MajorSuitPoints, // Not used directly
+                _ => 0
             };
 
-            if (contract.Denomination == Denomination.NoTrumps)
+            var contractPoints = contract.Denomination switch
             {
-                return NoTrumpFirstTrickPoints + ((int)contract.Level - 1) * MajorSuitPoints;
+                Denomination.NoTrumps => NoTrumpFirstTrickPoints + ((int)contract.Level - 1) * MajorSuitPoints,
+                _ => (int)contract.Level * basePointsPerTrick
+            };
+
+            if (contract.Risk == Risk.Doubled)
+            {
+                contractPoints *= 2;
+            }
+            else if (contract.Risk == Risk.Redoubled)
+            {
+                contractPoints *= 4;
             }
 
-            return (int)contract.Level * basePointsPerTrick;
+            return contractPoints;
         }
 
         private static int CalculateOvertrickPoints(IContract contract, bool vulnerable, int tricksMade)
         {
-            var overtricks = tricksMade - contract.Tricks();
-
+            var overtricks = tricksMade - ((int)contract.Level + 6);
             if (overtricks <= 0)
             {
                 return 0;
             }
 
-            return contract.Risk switch
+            var overtrickPoints = contract.Risk switch
             {
-                Risk.Redoubled => overtricks * RedoubledOvertrick(),
-                Risk.Doubled => overtricks * DoubledOvertrick(),
-                _ => overtricks * OvertrickPoints
+                Risk.Doubled => overtricks * (vulnerable ? DoubledOvertrickVulnerable : DoubledOvertrickNonVulnerable),
+                Risk.Redoubled => overtricks * 2 *
+                                  (vulnerable ? DoubledOvertrickVulnerable : DoubledOvertrickNonVulnerable),
+                _ => overtricks * contract.Denomination switch
+                {
+                    Denomination.Spades or Denomination.Hearts or Denomination.NoTrumps => OvertrickMajorSuit,
+                    Denomination.Clubs or Denomination.Diamonds => OvertrickMinorSuit,
+                    _ => 0
+                }
             };
 
-            int RedoubledOvertrick()
-            {
-                return vulnerable ? RedoubledOvertrickVulnerable : RedoubledOvertrickNonVulnerable;
-            }
-
-            int DoubledOvertrick()
-            {
-                return vulnerable ? DoubledOvertrickVulnerable : DoubledOvertrickNonVulnerable;
-            }
+            return overtrickPoints;
         }
 
-        private static int CalculateUndertrickPenalties(IContract contract, bool vulnerable, int tricksMade)
+        private static int CalculateUndertrickPoints(IContract contract, bool vulnerable, int tricksMade)
         {
-            var undertricks = contract.Tricks() - tricksMade;
-
+            var undertricks = (int)contract.Level + 6 - tricksMade;
             if (undertricks <= 0)
             {
                 return 0;
             }
 
-            return contract.Risk switch
+            var undertrickPoints = contract.Risk switch
             {
-                Risk.Redoubled => undertricks * RedoubledUndertrick(),
-                Risk.Doubled => undertricks * DoubledUnderTrick(),
-                _ => undertricks * Undertrick()
+                Risk.Doubled => vulnerable ? 200 + (undertricks - 1) * 300 : 100 + (undertricks - 1) * 200,
+                Risk.Redoubled => vulnerable ? 400 + (undertricks - 1) * 600 : 200 + (undertricks - 1) * 400,
+                _ => undertricks * (vulnerable ? UndertrickVulnerable : UndertrickNonVulnerable)
             };
 
-            int RedoubledUndertrick()
-            {
-                return vulnerable ? RedoubledUndertrickVulnerable : RedoubledUndertrickNonVulnerable;
-            }
-
-            int DoubledUnderTrick()
-            {
-                return vulnerable ? DoubledUndertrickVulnerable : DoubledUndertrickNonVulnerable;
-            }
-
-            int Undertrick()
-            {
-                return vulnerable ? UndertrickVulnerable : UndertrickNonVulnerable;
-            }
+            return undertrickPoints;
         }
 
-        private static int CalculateGameBonus(int baseContractPoints, bool vulnerable)
+        private static int CalculateGameBonus(int contractPoints, bool vulnerable)
         {
-            return baseContractPoints >= 100 ? vulnerable ? GameBonusVulnerable : GameBonusNonVulnerable : 0;
-        }
-
-        private static int CalculatePartScoreBonus(int baseContractPoints)
-        {
-            return baseContractPoints < 100 ? PartScoreBonus : 0;
+            return contractPoints >= 100 ? vulnerable ? GameBonusVulnerable : GameBonusNonVulnerable : 0;
         }
 
         private static int CalculateSlamBonus(IContract contract, bool vulnerable)
@@ -153,8 +131,8 @@ namespace ContractBridge.Core.Impl
         {
             return contract.Risk switch
             {
-                Risk.Redoubled => RedoublingBonus,
                 Risk.Doubled => DoublingBonus,
+                Risk.Redoubled => RedoublingBonus,
                 _ => 0
             };
         }

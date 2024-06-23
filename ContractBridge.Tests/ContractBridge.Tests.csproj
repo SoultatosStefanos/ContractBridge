@@ -137,6 +137,7 @@
         <Compile Include="Core\Impl\DeckTest.cs"/>
         <Compile Include="Core\Impl\GameTest.cs"/>
         <Compile Include="Core\Impl\HandTest.cs"/>
+        <Compile Include="Core\Impl\ScoringSystemTest.cs"/>
         <Compile Include="Core\Impl\SessionTest.cs"/>
         <Compile Include="Core\Impl\TurnSequenceTest.cs"/>
         <Compile Include="Core\Impl\TurnTest.cs"/>

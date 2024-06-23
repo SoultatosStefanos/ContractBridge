@@ -76,6 +76,7 @@
         <Compile Include="Core\Impl\IGameFactory.cs"/>
         <Compile Include="Core\Impl\IHandFactory.cs"/>
         <Compile Include="Core\Impl\IPairFactory.cs"/>
+        <Compile Include="Core\Impl\IScoringSystemFactory.cs"/>
         <Compile Include="Core\Impl\ISessionFactory.cs"/>
         <Compile Include="Core\Impl\ITrickFactory.cs"/>
         <Compile Include="Core\Impl\ITurnFactory.cs"/>
@@ -84,6 +85,7 @@
         <Compile Include="Core\Impl\Pair.cs"/>
         <Compile Include="Core\Impl\PairFactory.cs"/>
         <Compile Include="Core\Impl\ScoringSystem.cs"/>
+        <Compile Include="Core\Impl\ScoringSystemFactory.cs"/>
         <Compile Include="Core\Impl\Session.cs"/>
         <Compile Include="Core\Impl\SessionFactory.cs"/>
         <Compile Include="Core\Impl\Trick.cs"/>
