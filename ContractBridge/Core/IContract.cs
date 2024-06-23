@@ -1,11 +1,7 @@
 namespace ContractBridge.Core
 {
-    public interface IContract
+    public interface IContract : IBid
     {
-        Level Level { get; }
-
-        Denomination Denomination { get; }
-
         Seat Declarer { get; }
 
         Risk? Risk { get; }
