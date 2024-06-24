@@ -18,7 +18,8 @@ namespace ContractBridge.Tests.Core.Impl
                 new Board(new HandFactory()),
                 new PairFactory(),
                 new AuctionFactory(new TurnPlayContext(new TurnSequence(new TurnFactory())), new ContractFactory()),
-                new GameFactory(new TurnPlayContext(new TurnSequence(new TurnFactory())), new TrickFactory())
+                new GameFactory(new TurnPlayContext(new TurnSequence(new TurnFactory())), new TrickFactory()),
+                new ScoringSystem()
             );
         }
 

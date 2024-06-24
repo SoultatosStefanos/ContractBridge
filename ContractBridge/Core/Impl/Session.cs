@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace ContractBridge.Core.Impl
 {
@@ -14,6 +15,8 @@ namespace ContractBridge.Core.Impl
 
         private readonly IPair _northSouthPair;
 
+        private readonly IScoringSystem _scoringSystem;
+
         private Phase _phase = Phase.Setup;
 
         public Session(
@@ -21,13 +24,14 @@ namespace ContractBridge.Core.Impl
             IBoard board,
             IPairFactory pairFactory,
             IAuctionFactory auctionFactory,
-            IGameFactory gameFactory
-        )
+            IGameFactory gameFactory,
+            IScoringSystem scoringSystem)
         {
             Deck = deck;
             Board = board;
             _auctionFactory = auctionFactory;
             _gameFactory = gameFactory;
+            _scoringSystem = scoringSystem;
 
             _northSouthPair = pairFactory.Create(Partnership.NorthSouth);
             _eastWestPair = pairFactory.Create(Partnership.EastWest);
@@ -132,7 +136,16 @@ namespace ContractBridge.Core.Impl
         {
             Phase = Phase.Scoring;
 
-            // TODO Scoring
+            var contract = Auction!.FinalContract;
+            var vulnerable = Board.IsVulnerable(contract!.Declarer);
+            var declarerPair = Pair(contract.Declarer);
+            var defenderPair = OtherPair(contract.Declarer);
+            var tricksMade = declarerPair.AllTricksWon.Count();
+
+            var (declarerScore, defenderScore) = _scoringSystem.Score(contract, vulnerable, tricksMade);
+
+            declarerPair.Score += declarerScore;
+            defenderPair.Score += defenderScore;
         }
     }
 }

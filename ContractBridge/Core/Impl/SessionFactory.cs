@@ -8,16 +8,24 @@ namespace ContractBridge.Core.Impl
 
         private readonly IPairFactory _pairFactory;
 
-        public SessionFactory(IPairFactory pairFactory, IAuctionFactory auctionFactory, IGameFactory gameFactory)
+        private readonly IScoringSystem _scoringSystem;
+
+        public SessionFactory(
+            IPairFactory pairFactory, 
+            IAuctionFactory auctionFactory, 
+            IGameFactory gameFactory,  
+            IScoringSystem scoringSystem
+         )
         {
             _pairFactory = pairFactory;
             _auctionFactory = auctionFactory;
             _gameFactory = gameFactory;
+            _scoringSystem = scoringSystem;
         }
 
         public ISession Create(IDeck deck, IBoard board)
         {
-            return new Session(deck, board, _pairFactory, _auctionFactory, _gameFactory);
+            return new Session(deck, board, _pairFactory, _auctionFactory, _gameFactory, _scoringSystem);
         }
     }
 }
