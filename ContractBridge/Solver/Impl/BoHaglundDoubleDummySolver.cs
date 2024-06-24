@@ -124,14 +124,19 @@ namespace ContractBridge.Solver.Impl
     {
         private static readonly Denomination[] StrainOrder =
         {
-            Denomination.Spades, Denomination.Hearts,
-            Denomination.Diamonds, Denomination.Clubs,
+            Denomination.Spades,
+            Denomination.Hearts,
+            Denomination.Diamonds,
+            Denomination.Clubs,
             Denomination.NoTrumps
         };
 
         private static readonly Seat[] SeatOrder =
         {
-            Seat.North, Seat.East, Seat.South, Seat.West
+            Seat.North,
+            Seat.East,
+            Seat.South,
+            Seat.West
         };
 
         private readonly IContractFactory _contractFactory;
@@ -153,12 +158,14 @@ namespace ContractBridge.Solver.Impl
 
             var enumerableMakeableContracts = makeableContracts as IContract[] ?? makeableContracts.ToArray();
 
-            if (session.Phase == Phase.Play)
+            if (session.Phase != Phase.Play)
             {
-                foreach (var contract in enumerableMakeableContracts)
-                {
-                    optimalPlays[contract] = CalculateOptimalPlays(session, contract);
-                }
+                return new BoHaglundDoubleDummySolution(enumerableMakeableContracts, optimalPlays);
+            }
+
+            foreach (var contract in enumerableMakeableContracts)
+            {
+                optimalPlays[contract] = CalculateOptimalPlays(session, contract);
             }
 
             return new BoHaglundDoubleDummySolution(enumerableMakeableContracts, optimalPlays);
@@ -194,20 +201,33 @@ namespace ContractBridge.Solver.Impl
             return makeableContracts;
         }
 
-        private IEnumerable<ICard> CalculateOptimalPlays(ISession session, IContract contract)
+        private static IEnumerable<ICard> CalculateOptimalPlays(ISession session, IContract contract)
         {
-            var target = -1; // all possible tricks
-            var solutions = 3; // all solutions
-            var mode = 0; // normal
-            var threadIndex = 0; // single threaded
+            var board = session.Board;
+            var game = session.Game!;
+
+            const int target = -1; // all possible tricks
+            const int solutions = 3; // all solutions
+            const int mode = 0; // normal
+            const int threadIndex = 0; // single threaded
 
             var currentDeal = new DdDeal
             {
                 trump = (int)contract.Denomination,
-                first = (int)session.Game!.Lead!,
-                currentTrickSuit = new int[3] { -1, -1, -1 }, // TODO
-                currentTrickRank = new int[3] { -1, -1, -1 }, // TODO
-                remainCards = GetRemainingCards(session.Board)
+                first = (int)game.Lead!,
+                currentTrickSuit = new[]
+                {
+                    CurrentTrickSuitToBit(0),
+                    CurrentTrickSuitToBit(1),
+                    CurrentTrickSuitToBit(2)
+                },
+                currentTrickRank = new[]
+                {
+                    CurrentTrickRankToBit(0),
+                    CurrentTrickRankToBit(1),
+                    CurrentTrickRankToBit(2)
+                },
+                remainCards = HandsTo4X4Matrix(board)
             };
 
             var futureTricks = new DdFutureTricks
@@ -224,18 +244,39 @@ namespace ContractBridge.Solver.Impl
                 throw new DoubleDummySolverException($"SolveBoard failed with status {status}");
             }
 
-            var optimalPlays = new List<ICard>();
-            for (var i = 0; i < futureTricks.cards; ++i)
+            return DetermineOptimalPlays();
+
+            int CurrentTrickSuitToBit(int index)
             {
-                var suit = (Suit)futureTricks.suit[i];
-                var rank = (Rank)futureTricks.rank[i];
-                optimalPlays.Add(session.Deck[rank, suit]);
+                var playedCards = game.PlayedCards;
+                var card = playedCards.ElementAtOrDefault(index);
+                return card != null ? (int)card.Suit : -1;
             }
 
-            return optimalPlays;
+            int CurrentTrickRankToBit(int index)
+            {
+                var playedCards = game.PlayedCards;
+                var card = playedCards.ElementAtOrDefault(index);
+                return card != null ? (int)card.Rank : -1;
+            }
+
+            IEnumerable<ICard> DetermineOptimalPlays()
+            {
+                var optimalPlays = new List<ICard>();
+
+                for (var i = 0; i < futureTricks.cards; ++i)
+                {
+                    var suit = (Suit)futureTricks.suit[i];
+                    var rank = (Rank)futureTricks.rank[i];
+
+                    optimalPlays.Add(session.Deck[rank, suit]);
+                }
+
+                return optimalPlays;
+            }
         }
 
-        private static uint[] GetRemainingCards(IBoard board)
+        private static uint[] HandsTo4X4Matrix(IBoard board)
         {
             var remainingCards = new uint[16];
 

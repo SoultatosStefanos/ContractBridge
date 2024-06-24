@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
@@ -25,6 +26,8 @@ namespace ContractBridge.Core
         Seat? Lead { get; }
 
         Seat? Turn { get; }
+
+        IEnumerable<ICard> PlayedCards { get; }
 
         bool CanFollow(ICard card, Seat seat);
 

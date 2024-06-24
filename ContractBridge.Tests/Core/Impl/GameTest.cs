@@ -35,7 +35,7 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void InitiallyPlayedCardsAreEmpty()
         {
-            Assert.That(_game.AllPlayedCards, Is.Empty);
+            Assert.That(_game.PlayedCards, Is.Empty);
         }
 
         [Test]

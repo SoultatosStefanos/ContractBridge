@@ -46,8 +46,6 @@ namespace ContractBridge.Core.Impl
             _trickFactory = trickFactory;
         }
 
-        public IEnumerable<ICard> AllPlayedCards => _playEntries.Select(entry => entry.Card);
-
         public IBoard Board { get; }
 
         public TrumpSuit TrumpSuit { get; set; }
@@ -90,6 +88,8 @@ namespace ContractBridge.Core.Impl
                 RaiseTurnChangedEvent(_nextTurn!.Value);
             }
         }
+
+        public IEnumerable<ICard> PlayedCards => _playEntries.Select(entry => entry.Card);
 
         public bool CanFollow(ICard card, Seat seat)
         {

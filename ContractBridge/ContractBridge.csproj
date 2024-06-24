@@ -104,7 +104,7 @@
         <Compile Include="Solver\IDoubleDummySolution.cs"/>
         <Compile Include="Solver\IDoubleDummySolver.cs"/>
         <Compile Include="Solver\Impl\BoHaglundDoubleDummySolver.cs"/>
-        <Compile Include="Solver\Impl\IDoubleDummySolutionFactory.cs"/>
+        <Compile Include="Solver\Impl\BoHaglundDoubleDummySolverFactory.cs" />
         <Compile Include="Solver\Impl\IDoubleDummySolverFactory.cs"/>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
