@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace ContractBridge.Core.Impl
 {
@@ -109,6 +110,35 @@ namespace ContractBridge.Core.Impl
         public event EventHandler<IBoard.DealerEventArgs>? DealerSet;
 
         public event EventHandler<IBoard.VulnerabilityEventArgs>? VulnerabilitySet;
+
+        public string ToPbn()
+        {
+            if (Dealer is not { } dealer)
+            {
+                return "";
+            }
+
+            var seatCount = Enum.GetNames(typeof(Seat)).Length;
+
+            var pbn = new StringBuilder();
+
+            pbn.Append(dealer.ToString()[0]);
+            pbn.Append(':');
+
+            for (var i = 0; i < seatCount; ++i)
+            {
+                if (i != 0)
+                {
+                    pbn.Append(' ');
+                }
+
+                pbn.Append(Hand(dealer).ToPbn());
+
+                dealer = dealer.NextSeat();
+            }
+
+            return pbn.ToString();
+        }
 
         private bool Equals(Board other)
         {

@@ -173,5 +173,29 @@ namespace ContractBridge.Tests.Core.Impl
             Assert.That(_board.IsVulnerable(Seat.North), Is.False);
             Assert.That(_board.IsVulnerable(Seat.South), Is.False);
         }
+
+        [Test]
+        public void ToPbn()
+        {
+            _board.Dealer = Seat.West;
+
+            var hand1 = _board.Hand(Seat.West);
+
+            hand1.Add(new Card(Rank.King, Suit.Spades));
+            hand1.Add(new Card(Rank.Queen, Suit.Spades));
+            hand1.Add(new Card(Rank.Ten, Suit.Spades));
+            hand1.Add(new Card(Rank.Two, Suit.Spades));
+            hand1.Add(new Card(Rank.Ace, Suit.Hearts));
+            hand1.Add(new Card(Rank.Ten, Suit.Hearts));
+            hand1.Add(new Card(Rank.Jack, Suit.Diamonds));
+            hand1.Add(new Card(Rank.Six, Suit.Diamonds));
+            hand1.Add(new Card(Rank.Five, Suit.Diamonds));
+            hand1.Add(new Card(Rank.Four, Suit.Diamonds));
+            hand1.Add(new Card(Rank.Two, Suit.Diamonds));
+            hand1.Add(new Card(Rank.Eight, Suit.Clubs));
+            hand1.Add(new Card(Rank.Five, Suit.Clubs));
+
+            Assert.That(_board.ToPbn(), Is.EqualTo("W:KQT2.AT.J6542.85 - - -"));
+        }
     }
 }

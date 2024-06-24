@@ -40,7 +40,7 @@ namespace ContractBridge.Core.Impl
         {
             if (Contains(card))
             {
-                throw new CardAlreadyInHandException();
+                throw new CardAlreadyInHandException($"Card: {card} already in hand.");
             }
 
             _cards.Add(card);

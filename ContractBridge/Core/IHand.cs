@@ -4,6 +4,13 @@ namespace ContractBridge.Core
 {
     public class CardAlreadyInHandException : Exception
     {
+        public CardAlreadyInHandException()
+        {
+        }
+
+        public CardAlreadyInHandException(string message) : base(message)
+        {
+        }
     }
 
     public interface IHand : ICardCollection, IPbnSerializable

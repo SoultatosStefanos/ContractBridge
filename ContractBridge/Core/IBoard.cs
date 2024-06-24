@@ -7,7 +7,7 @@ namespace ContractBridge.Core
     {
     }
 
-    public interface IBoard
+    public interface IBoard : IPbnSerializable
     {
         Seat? Dealer { get; set; }
 
@@ -63,12 +63,6 @@ namespace ContractBridge.Core
                 Seat.North or Seat.South => vulnerability == Vulnerability.NorthSouth,
                 _ => false
             };
-        }
-
-        public static string HandsToPbn(this IBoard board)
-        {
-            // TODO
-            throw new NotImplementedException();
         }
     }
 }

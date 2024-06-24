@@ -175,7 +175,7 @@ namespace ContractBridge.Solver.Impl
 
         private IEnumerable<IContract> CalculateMakeableContracts(IBoard board)
         {
-            var table = new DdTableDealPbn(board.HandsToPbn());
+            var table = new DdTableDealPbn(board.ToPbn());
 
             var results = new DdTableResults
             {
