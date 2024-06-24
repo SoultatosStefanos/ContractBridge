@@ -141,6 +141,7 @@
         <Compile Include="Core\Impl\ScoringSystemTest.cs"/>
         <Compile Include="Core\Impl\SessionTest.cs"/>
         <Compile Include="Core\SeatExtensionsTest.cs"/>
+        <Compile Include="Solver\Impl\BoHaglundDoubleDummySolverTest.cs"/>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

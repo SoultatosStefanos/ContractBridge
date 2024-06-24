@@ -69,7 +69,11 @@ namespace ContractBridge.Solver.Impl
 
     internal class DdsImport
     {
-        [DllImport("dds.dll")]
+#if WINDOWS
+    [DllImport("dds.dll")]
+#else
+        [DllImport("libdds.so")]
+#endif
         public static extern int SolveBoard(
             [In] DdDeal ddDeal, // struct deal dl, 
             int target, // -1 to solve for all possible tricks
@@ -79,7 +83,11 @@ namespace ContractBridge.Solver.Impl
             int threadIndex // 0-15 (0 for single-threaded)
         );
 
-        [DllImport("dds.dll")]
+#if WINDOWS
+    [DllImport("dds.dll")]
+#else
+        [DllImport("libdds.so")]
+#endif
         public static extern int CalcDDtablePBN(
             [In] DdTableDealPbn deal,
             [In] [Out] ref DdTableResults results
