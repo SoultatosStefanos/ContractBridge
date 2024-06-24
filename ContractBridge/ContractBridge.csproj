@@ -88,6 +88,7 @@
         <Compile Include="Core\Impl\Trick.cs"/>
         <Compile Include="Core\Impl\TrickFactory.cs"/>
         <Compile Include="Core\IPair.cs"/>
+        <Compile Include="Core\IPbnSerializable.cs"/>
         <Compile Include="Core\IScoringSystem.cs"/>
         <Compile Include="Core\ISession.cs"/>
         <Compile Include="Core\ITrick.cs"/>
@@ -104,7 +105,7 @@
         <Compile Include="Solver\IDoubleDummySolution.cs"/>
         <Compile Include="Solver\IDoubleDummySolver.cs"/>
         <Compile Include="Solver\Impl\BoHaglundDoubleDummySolver.cs"/>
-        <Compile Include="Solver\Impl\BoHaglundDoubleDummySolverFactory.cs" />
+        <Compile Include="Solver\Impl\BoHaglundDoubleDummySolverFactory.cs"/>
         <Compile Include="Solver\Impl\IDoubleDummySolverFactory.cs"/>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>

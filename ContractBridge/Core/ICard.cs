@@ -1,6 +1,6 @@
 namespace ContractBridge.Core
 {
-    public interface ICard
+    public interface ICard : IPbnSerializable
     {
         Rank Rank { get; }
 
