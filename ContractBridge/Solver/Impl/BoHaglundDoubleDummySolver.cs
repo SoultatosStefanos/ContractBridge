@@ -168,9 +168,9 @@ namespace ContractBridge.Solver.Impl
             return (Suit)(4 + suit);
         }
 
-        private static IEnumerable<T> EnumerateEnumValues<T>(Type enumType)
+        private static IEnumerable<T> EnumValues<T>(Type enumType)
         {
-            return (IEnumerable<T>)Enum.GetValues(enumType).GetEnumerator();
+            return (T[])Enum.GetValues(enumType);
         }
 
         private IEnumerable<IContract> CalculateMakeableContracts(IBoard board)
@@ -193,8 +193,8 @@ namespace ContractBridge.Solver.Impl
             IEnumerable<IContract> DetermineMakeableContracts()
             {
                 var next = 0;
-                return (from strain in EnumerateEnumValues<Denomination>(typeof(Denomination))
-                    from declarer in EnumerateEnumValues<Seat>(typeof(Seat))
+                return (from strain in EnumValues<Denomination>(typeof(Denomination))
+                    from declarer in EnumValues<Seat>(typeof(Seat))
                     let tricks = results.solution[next++]
                     where tricks > 6
                     select _contractFactory.Create((Level)tricks - 6, strain, declarer, null)).ToList();
@@ -280,7 +280,7 @@ namespace ContractBridge.Solver.Impl
         {
             var remainingCards = new uint[16];
 
-            foreach (var seat in EnumerateEnumValues<Seat>(typeof(Seat)))
+            foreach (var seat in EnumValues<Seat>(typeof(Seat)))
             {
                 var hand = board.Hand(seat);
 
