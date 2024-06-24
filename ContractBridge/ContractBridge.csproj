@@ -95,6 +95,7 @@
         <Compile Include="Core\Impl\TurnPlayContext.cs"/>
         <Compile Include="Core\Impl\TurnPlayContextFactory.cs"/>
         <Compile Include="Core\Impl\TurnSequence.cs"/>
+        <Compile Include="Core\Impl\TurnSequenceFactory.cs"/>
         <Compile Include="Core\IPair.cs"/>
         <Compile Include="Core\IScoringSystem.cs"/>
         <Compile Include="Core\ISession.cs"/>

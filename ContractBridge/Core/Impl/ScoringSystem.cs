@@ -46,8 +46,8 @@ namespace ContractBridge.Core.Impl
         {
             var basePointsPerTrick = contract.Denomination switch
             {
-                Denomination.Spades or Denomination.Hearts => MajorSuitPoints,
-                Denomination.Clubs or Denomination.Diamonds => MinorSuitPoints,
+                var d when d.IsMajor() => MajorSuitPoints,
+                var d when d.IsMinor() => MinorSuitPoints,
                 Denomination.NoTrumps => MajorSuitPoints, // Not used directly
                 _ => 0
             };
