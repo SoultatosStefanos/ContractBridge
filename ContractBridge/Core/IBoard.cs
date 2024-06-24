@@ -64,5 +64,11 @@ namespace ContractBridge.Core
                 _ => false
             };
         }
+
+        public static string HandsToPbn(this IBoard board)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
     }
 }

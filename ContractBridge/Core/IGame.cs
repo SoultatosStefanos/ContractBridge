@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
@@ -12,8 +11,6 @@ namespace ContractBridge.Core
         IBoard Board { get; }
 
         TrumpSuit TrumpSuit { get; set; }
-
-        IEnumerable<ICard> AllPlayedCards { get; }
 
         ITurnPlayContext TurnPlayContext { get; }
 
