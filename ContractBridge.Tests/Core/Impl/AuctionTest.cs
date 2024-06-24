@@ -11,13 +11,10 @@ namespace ContractBridge.Tests.Core.Impl
         [SetUp]
         public void SetUp()
         {
-            _auction = new Auction(
-                new TurnPlayContext(new TurnSequence(new TurnFactory())
-                {
-                    Lead = Seat.East
-                }),
-                new ContractFactory()
-            );
+            _auction = new Auction(new ContractFactory())
+            {
+                FirstTurn = Seat.East
+            };
         }
 
         private Auction _auction;
@@ -62,24 +59,24 @@ namespace ContractBridge.Tests.Core.Impl
         }
 
         [Test]
-        public void CallOutOfTurnThrowsPlayOutOfTurnException()
+        public void CallOutOfTurnThrowsAuctionPlayOutOfTurnException()
         {
-            Assert.Throws<PlayOutOfTurnException>(() =>
+            Assert.Throws<AuctionPlayOutOfTurnException>(() =>
             {
                 _auction.Call(new Bid(Level.Five, Denomination.NoTrumps), Seat.North);
             });
         }
 
         [Test]
-        public void PassOutOfTurnThrowsPlayOutOfTurnException()
+        public void PassOutOfTurnThrowsAuctionPlayOutOfTurnException()
         {
-            Assert.Throws<PlayOutOfTurnException>(() => { _auction.Pass(Seat.South); });
+            Assert.Throws<AuctionPlayOutOfTurnException>(() => { _auction.Pass(Seat.South); });
         }
 
         [Test]
-        public void DoubleOutOfTurnThrowsPlayOutOfTurnException()
+        public void DoubleOutOfTurnThrowsAuctionPlayOutOfTurnException()
         {
-            Assert.Throws<PlayOutOfTurnException>(() => { _auction.Pass(Seat.West); });
+            Assert.Throws<AuctionPlayOutOfTurnException>(() => { _auction.Pass(Seat.West); });
         }
 
         [Test]

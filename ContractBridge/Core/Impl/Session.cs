@@ -106,7 +106,7 @@ namespace ContractBridge.Core.Impl
             Phase = Phase.Auction;
 
             Auction = _auctionFactory.Create();
-            Auction.TurnPlayContext.TurnSequence.Lead = Board.Dealer;
+            Auction.FirstTurn = Board.Dealer;
             Auction.FinalContractMade += OnFinalContractMade;
         }
 

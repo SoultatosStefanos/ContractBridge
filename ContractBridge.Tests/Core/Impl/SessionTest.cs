@@ -17,7 +17,7 @@ namespace ContractBridge.Tests.Core.Impl
                 new Deck(new CardFactory(), IDeck.Partition.BySuit),
                 new Board(new HandFactory()),
                 new PairFactory(),
-                new AuctionFactory(new TurnPlayContext(new TurnSequence(new TurnFactory())), new ContractFactory()),
+                new AuctionFactory(new ContractFactory()),
                 new GameFactory(new TrickFactory()),
                 new ScoringSystem()
             );

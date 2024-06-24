@@ -3,19 +3,23 @@ using System.Collections.Generic;
 
 namespace ContractBridge.Core
 {
-    public class InvalidAuctionPlayException : Exception
+    public class AuctionPlayException : Exception
     {
     }
 
-    public class AuctionCallTooLowException : InvalidAuctionPlayException
+    public class AuctionPlayOutOfTurnException : AuctionPlayException
     {
     }
 
-    public class AuctionDoubleOnPartnerException : InvalidAuctionPlayException
+    public class AuctionCallTooLowException : AuctionPlayException
     {
     }
 
-    public class AuctionDoubleBeforeCallException : InvalidAuctionPlayException
+    public class AuctionDoubleOnPartnerException : AuctionPlayException
+    {
+    }
+
+    public class AuctionDoubleBeforeCallException : AuctionPlayException
     {
     }
 
@@ -29,7 +33,9 @@ namespace ContractBridge.Core
 
         IEnumerable<IBid> AllBids { get; }
 
-        ITurnPlayContext TurnPlayContext { get; }
+        Seat? FirstTurn { get; set; }
+
+        Seat? Turn { get; }
 
         bool CanCall(IBid bid, Seat seat);
 
@@ -43,6 +49,8 @@ namespace ContractBridge.Core
 
         void Double(Seat seat);
 
+        event EventHandler<TurnEventArgs> TurnChanged;
+
         event EventHandler<CallEventArgs> Called;
 
         event EventHandler<PassEventArgs> Passed;
@@ -54,6 +62,16 @@ namespace ContractBridge.Core
         event EventHandler<ContractEventArgs> FinalContractMade;
 
         event EventHandler PassedOut;
+
+        public sealed class TurnEventArgs : EventArgs
+        {
+            public TurnEventArgs(Seat seat)
+            {
+                Seat = seat;
+            }
+
+            public Seat Seat { get; }
+        }
 
         public sealed class CallEventArgs : EventArgs
         {
