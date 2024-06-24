@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace ContractBridge.Core.Impl
 {
@@ -82,6 +83,50 @@ namespace ContractBridge.Core.Impl
         public event EventHandler? Cleared;
 
         public event EventHandler? Emptied;
+
+        public string ToPbn()
+        {
+            if (Count == 0)
+            {
+                return "-";
+            }
+
+            const string suitSeparator = ".";
+            const Suit lastSuit = Suit.Clubs;
+
+            var s = new StringBuilder();
+
+            var cards = new List<ICard>();
+            cards.AddRange(_cards);
+            cards.Sort((a, b) => (int)b.Rank - (int)a.Rank);
+
+            foreach (var suit in GetSuitValues().OrderByDescending(x => x))
+            {
+                foreach (var card in cards.Where(card => card.Suit == suit))
+                {
+                    s.Append(card.ToPbn()[1]);
+                }
+
+                if (suit == lastSuit)
+                {
+                    continue;
+                }
+
+                if (s.Length > 0 && s[s.Length - 1] == ' ')
+                {
+                    s.Length -= 1;
+                }
+
+                s.Append(suitSeparator);
+            }
+
+            return s.ToString().Trim();
+        }
+
+        private static IEnumerable<Suit> GetSuitValues()
+        {
+            return (Suit[])Enum.GetValues(typeof(Suit));
+        }
 
         private bool Equals(Hand other)
         {

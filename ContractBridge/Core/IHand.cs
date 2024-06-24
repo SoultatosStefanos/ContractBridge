@@ -6,7 +6,7 @@ namespace ContractBridge.Core
     {
     }
 
-    public interface IHand : ICardCollection
+    public interface IHand : ICardCollection, IPbnSerializable
     {
         void Add(ICard card);
 

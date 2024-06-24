@@ -319,5 +319,25 @@ namespace ContractBridge.Tests.Core.Impl
             Assert.That(clearedEventRaised, Is.True);
             Assert.That(emptiedEventRaised, Is.True);
         }
+
+        [Test]
+        public void ToPbn()
+        {
+            _hand.Add(new Card(Rank.King, Suit.Spades));
+            _hand.Add(new Card(Rank.Queen, Suit.Spades));
+            _hand.Add(new Card(Rank.Ten, Suit.Spades));
+            _hand.Add(new Card(Rank.Two, Suit.Spades));
+            _hand.Add(new Card(Rank.Ace, Suit.Hearts));
+            _hand.Add(new Card(Rank.Ten, Suit.Hearts));
+            _hand.Add(new Card(Rank.Jack, Suit.Diamonds));
+            _hand.Add(new Card(Rank.Six, Suit.Diamonds));
+            _hand.Add(new Card(Rank.Five, Suit.Diamonds));
+            _hand.Add(new Card(Rank.Four, Suit.Diamonds));
+            _hand.Add(new Card(Rank.Two, Suit.Diamonds));
+            _hand.Add(new Card(Rank.Eight, Suit.Clubs));
+            _hand.Add(new Card(Rank.Five, Suit.Clubs));
+
+            Assert.That(_hand.ToPbn(), Is.EqualTo("KQT2.AT.J6542.85"));
+        }
     }
 }
