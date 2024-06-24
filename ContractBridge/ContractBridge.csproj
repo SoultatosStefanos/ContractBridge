@@ -109,6 +109,9 @@
         <Compile Include="Solver\Impl\IDoubleDummySolverFactory.cs"/>
     </ItemGroup>
     <ItemGroup>
+      <Content Include="dds.dll">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
       <Content Include="libdds.so">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
