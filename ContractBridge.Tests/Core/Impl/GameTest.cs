@@ -19,14 +19,10 @@ namespace ContractBridge.Tests.Core.Impl
             _deck = new Deck(new CardFactory(), IDeck.Partition.BySuit);
             _deck.Deal(_board);
 
-            var turnPlayContext = new TurnPlayContext(new TurnSequence(new TurnFactory())
+            _game = new Game(_board, new TrickFactory())
             {
-                Lead = Seat.East
-            });
-
-            _game = new Game(_board, turnPlayContext, new TrickFactory())
-            {
-                TrumpSuit = TrumpSuit.Hearts
+                TrumpSuit = TrumpSuit.Hearts,
+                FirstLead = Seat.East
             };
         }
 
@@ -40,6 +36,16 @@ namespace ContractBridge.Tests.Core.Impl
         public void InitiallyPlayedCardsAreEmpty()
         {
             Assert.That(_game.AllPlayedCards, Is.Empty);
+        }
+
+        [Test]
+        public void InitiallyLeadAndTurnAreFirstLead()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(_game.Lead, Is.EqualTo(Seat.East));
+                Assert.That(_game.Turn, Is.EqualTo(Seat.East));
+            });
         }
 
         [Test]
@@ -58,13 +64,13 @@ namespace ContractBridge.Tests.Core.Impl
         }
 
         [Test]
-        public void FollowOutOfTurnThrowsPlayOutOfTurnException()
+        public void FollowOutOfTurnThrowsGamePlayOutOfTurnException()
         {
             Assert.Multiple(() =>
             {
-                Assert.Throws<PlayOutOfTurnException>(() => _game.Follow(_board.Hand(Seat.North)[0], Seat.North));
-                Assert.Throws<PlayOutOfTurnException>(() => _game.Follow(_board.Hand(Seat.South)[0], Seat.South));
-                Assert.Throws<PlayOutOfTurnException>(() => _game.Follow(_board.Hand(Seat.West)[0], Seat.West));
+                Assert.Throws<GamePlayOutOfTurnException>(() => _game.Follow(_board.Hand(Seat.North)[0], Seat.North));
+                Assert.Throws<GamePlayOutOfTurnException>(() => _game.Follow(_board.Hand(Seat.South)[0], Seat.South));
+                Assert.Throws<GamePlayOutOfTurnException>(() => _game.Follow(_board.Hand(Seat.West)[0], Seat.West));
             });
         }
 
@@ -96,6 +102,24 @@ namespace ContractBridge.Tests.Core.Impl
                 Assert.Throws<CardNotInHandException>(() =>
                     _game.CanFollow(_deck[Rank.Two, Suit.Clubs], Seat.South)
                 );
+            });
+        }
+
+        [Test]
+        public void SetFirstLeadRaisedTurnAndLeadChangedEvent()
+        {
+            var turnChanged = false;
+            var leadChanged = false;
+
+            _game.TurnChanged += (sender, args) => turnChanged = true;
+            _game.LeadChanged += (sender, args) => leadChanged = true;
+
+            _game.FirstLead = Seat.North;
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(turnChanged, Is.EqualTo(true));
+                Assert.That(leadChanged, Is.EqualTo(true));
             });
         }
 
@@ -149,15 +173,18 @@ namespace ContractBridge.Tests.Core.Impl
             _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
+
+            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
             _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
-            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
-            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
-            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
-            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+
             _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
             _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
 
             Assert.Multiple(() =>
             {
@@ -174,15 +201,18 @@ namespace ContractBridge.Tests.Core.Impl
             _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
+
+            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
             _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
-            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
-            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
-            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
-            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+
             _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
             _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
+
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
 
             Assert.DoesNotThrow(() => { _game.Follow(_board.Hand(Seat.South)[Rank.Two, Suit.Diamonds], Seat.South); });
         }
@@ -232,17 +262,17 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void TrickWonDiscarding()
         {
-            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
 
-            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
 
-            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
@@ -278,17 +308,17 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void TrickWonTrumpingOneTrumpSuitCard()
         {
-            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
 
-            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
 
-            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
@@ -324,17 +354,17 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void TrickWonTrumpingTwoTrumpSuitCards()
         {
-            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Five, Suit.Clubs], Seat.North);
 
-            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Seven, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Eight, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
 
-            _game.Follow(_board.Hand(Seat.East)[Rank.Ten, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.East)[Rank.Ace, Suit.Clubs], Seat.East);
             _game.Follow(_board.Hand(Seat.South)[Rank.Jack, Suit.Clubs], Seat.South);
             _game.Follow(_board.Hand(Seat.West)[Rank.Queen, Suit.Clubs], Seat.West);
             _game.Follow(_board.Hand(Seat.North)[Rank.King, Suit.Clubs], Seat.North);
@@ -365,6 +395,21 @@ namespace ContractBridge.Tests.Core.Impl
             _game.Follow(_board.Hand(Seat.North)[Rank.Three, Suit.Hearts], Seat.North);
 
             Assert.That(eventRaised, Is.True);
+        }
+
+        [Test]
+        public void TrickWinnerLeadsNextTrick()
+        {
+            _game.Follow(_board.Hand(Seat.East)[Rank.Six, Suit.Clubs], Seat.East);
+            _game.Follow(_board.Hand(Seat.South)[Rank.Three, Suit.Clubs], Seat.South);
+            _game.Follow(_board.Hand(Seat.West)[Rank.Four, Suit.Clubs], Seat.West);
+            _game.Follow(_board.Hand(Seat.North)[Rank.Nine, Suit.Clubs], Seat.North);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_game.Lead, Is.EqualTo(Seat.North));
+                Assert.That(_game.Turn, Is.EqualTo(Seat.North));
+            });
         }
     }
 }

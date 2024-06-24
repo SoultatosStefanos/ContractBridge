@@ -2,7 +2,15 @@ using System;
 
 namespace ContractBridge.Core
 {
-    public class CardNotInHandException : Exception
+    public class GamePlayException : Exception
+    {
+    }
+
+    public class CardNotInHandException : GamePlayException
+    {
+    }
+
+    public class GamePlayOutOfTurnException : GamePlayException
     {
     }
 
@@ -12,7 +20,11 @@ namespace ContractBridge.Core
 
         TrumpSuit TrumpSuit { get; set; }
 
-        ITurnPlayContext TurnPlayContext { get; }
+        Seat? FirstLead { get; set; }
+
+        Seat? Lead { get; }
+
+        Seat? Turn { get; }
 
         bool CanFollow(ICard card, Seat seat);
 
@@ -20,11 +32,35 @@ namespace ContractBridge.Core
 
         void Follow(ICard card, Seat seat);
 
+        event EventHandler<LeadEventArgs> LeadChanged;
+
+        event EventHandler<TurnEventArgs> TurnChanged;
+
         event EventHandler<FollowEventArgs> Followed;
 
         event EventHandler<TrickEventArgs> TrickWon;
 
         event EventHandler Done;
+
+        public sealed class LeadEventArgs : EventArgs
+        {
+            public LeadEventArgs(Seat seat)
+            {
+                Seat = seat;
+            }
+
+            public Seat Seat { get; }
+        }
+
+        public sealed class TurnEventArgs : EventArgs
+        {
+            public TurnEventArgs(Seat seat)
+            {
+                Seat = seat;
+            }
+
+            public Seat Seat { get; }
+        }
 
         public sealed class FollowEventArgs : EventArgs
         {

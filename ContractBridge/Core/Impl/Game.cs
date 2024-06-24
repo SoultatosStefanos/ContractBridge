@@ -32,22 +32,64 @@ namespace ContractBridge.Core.Impl
 
         private readonly ITrickFactory _trickFactory;
 
+        private Seat? _firstLead;
+
         private int _followCount;
 
-        public Game(IBoard board, ITurnPlayContext turnPlayContext, ITrickFactory trickFactory)
+        private Seat? _lead;
+
+        private Seat? _nextTurn;
+
+        public Game(IBoard board, ITrickFactory trickFactory)
         {
             Board = board;
-            TurnPlayContext = turnPlayContext;
             _trickFactory = trickFactory;
         }
+
+        public IEnumerable<ICard> AllPlayedCards => _playEntries.Select(entry => entry.Card);
 
         public IBoard Board { get; }
 
         public TrumpSuit TrumpSuit { get; set; }
 
-        public IEnumerable<ICard> AllPlayedCards => _playEntries.Select(entry => entry.Card);
+        public Seat? FirstLead
+        {
+            get => _firstLead;
+            set
+            {
+                _firstLead = value;
 
-        public ITurnPlayContext TurnPlayContext { get; }
+                if (FirstLead is not { } firstLead)
+                {
+                    return;
+                }
+
+                Turn = firstLead;
+                Lead = firstLead;
+            }
+        }
+
+        public Seat? Lead
+        {
+            get => _lead;
+            private set
+            {
+                _lead = value;
+                Debug.Assert(_lead != null, nameof(_lead) + " != null");
+                RaiseLeadChangedEvent(_lead!.Value);
+            }
+        }
+
+        public Seat? Turn
+        {
+            get => _nextTurn;
+            private set
+            {
+                _nextTurn = value;
+                Debug.Assert(_nextTurn != null, nameof(_nextTurn) + " != null");
+                RaiseTurnChangedEvent(_nextTurn!.Value);
+            }
+        }
 
         public bool CanFollow(ICard card, Seat seat)
         {
@@ -58,25 +100,37 @@ namespace ContractBridge.Core.Impl
                 throw new CardNotInHandException();
             }
 
-            return TurnPlayContext.CanPlayTurn(seat, () =>
+            if (Turn is not { } turn)
             {
-                if (LastPlayEntry() is not var (lastPlayCard, _))
-                {
-                    return true;
-                }
+                return false;
+            }
 
-                return lastPlayCard.Suit == card.Suit || CantFollowSuit(lastPlayCard);
-            });
-
-            bool CantFollowSuit(ICard lastPlayCard)
+            if (turn != seat)
             {
-                return seatHand.All(handCard => handCard.Suit != lastPlayCard.Suit);
+                return false;
+            }
+
+            if (LastPlayEntry() is not var (lastPlayCard, _))
+            {
+                return true;
+            }
+
+            return lastPlayCard.Suit == card.Suit || CantFollowSuit(lastPlayCard);
+
+            bool CantFollowSuit(ICard lastCard)
+            {
+                return seatHand.All(handCard => handCard.Suit != lastCard.Suit);
             }
         }
 
         public bool CanFollow(Seat seat)
         {
-            return TurnPlayContext.CanPlayTurn(seat, () => true);
+            if (Turn is not { } turn)
+            {
+                return false;
+            }
+
+            return turn == seat;
         }
 
         public void Follow(ICard card, Seat seat)
@@ -88,33 +142,63 @@ namespace ContractBridge.Core.Impl
                 throw new CardNotInHandException();
             }
 
-            TurnPlayContext.PlayTurn(seat, () =>
+            if (Turn is not { } turn)
             {
-                _playEntries.Add(new PlayEntry(card, seat));
-                seatHand.Remove(card);
-                RaiseFollowedEvent(card, seat);
+                throw new GamePlayOutOfTurnException();
+            }
 
-                if (SaveFollowAndCheckForAdvance())
+            if (turn != seat)
+            {
+                throw new GamePlayOutOfTurnException();
+            }
+
+            _playEntries.Add(new PlayEntry(card, seat));
+            seatHand.Remove(card);
+            RaiseFollowedEvent(card, seat);
+
+            if (SaveFollowAndCheckForAdvance())
+            {
+                var trickWinner = GetTrickWinner();
+                var last4Cards = TakeLast4Cards();
+                var trick = _trickFactory.Create(last4Cards);
+
+                RaiseTrickWonEvent(trick, trickWinner);
+
+                Turn = trickWinner;
+                Lead = trickWinner;
+
+                if (IsGameDone(seatHand))
                 {
-                    var trickWinner = GetTrickWinner();
-                    var last4Cards = TakeLast4Cards();
-                    var trick = _trickFactory.Create(last4Cards);
-
-                    RaiseTrickWonEvent(trick, trickWinner);
-
-                    if (IsGameDone(seatHand))
-                    {
-                        RaiseDoneEvent();
-                    }
-
-                    _followCount = 0;
+                    RaiseDoneEvent();
                 }
-            });
+
+                _followCount = 0;
+            }
+            else
+            {
+                Turn = turn.NextSeat();
+            }
         }
 
+        public event EventHandler<IGame.LeadEventArgs>? LeadChanged;
+
+        public event EventHandler<IGame.TurnEventArgs>? TurnChanged;
+
         public event EventHandler<IGame.FollowEventArgs>? Followed;
+
         public event EventHandler<IGame.TrickEventArgs>? TrickWon;
+
         public event EventHandler? Done;
+
+        private void RaiseLeadChangedEvent(Seat lead)
+        {
+            LeadChanged?.Invoke(this, new IGame.LeadEventArgs(lead));
+        }
+
+        private void RaiseTurnChangedEvent(Seat nextTurn)
+        {
+            TurnChanged?.Invoke(this, new IGame.TurnEventArgs(nextTurn));
+        }
 
         private bool IsGameDone(IHand seatHand)
         {
