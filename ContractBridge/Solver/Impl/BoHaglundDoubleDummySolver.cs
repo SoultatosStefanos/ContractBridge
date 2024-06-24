@@ -88,7 +88,7 @@ namespace ContractBridge.Solver.Impl
     }
 
     #endregion
-    
+
     internal class BoHaglundDoubleDummySolution : IDoubleDummySolution
     {
         private readonly IEnumerable<IContract> _makeableContracts;
@@ -143,26 +143,30 @@ namespace ContractBridge.Solver.Impl
 
         public IDoubleDummySolution Analyze(ISession session)
         {
-            if (session.Game == null)
+            if (session.Phase < Phase.Auction)
             {
                 throw new InvalidPhaseForSolving();
             }
 
-            var makeableContracts = CalculateMakeableContracts(session.Game!);
+            var makeableContracts = CalculateMakeableContracts(session.Board);
             var optimalPlays = new Dictionary<IContract, IEnumerable<ICard>>();
 
             var enumerableMakeableContracts = makeableContracts as IContract[] ?? makeableContracts.ToArray();
-            foreach (var contract in enumerableMakeableContracts)
+
+            if (session.Phase == Phase.Play)
             {
-                optimalPlays[contract] = CalculateOptimalPlays(session, contract);
+                foreach (var contract in enumerableMakeableContracts)
+                {
+                    optimalPlays[contract] = CalculateOptimalPlays(session, contract);
+                }
             }
 
             return new BoHaglundDoubleDummySolution(enumerableMakeableContracts, optimalPlays);
         }
 
-        private IEnumerable<IContract> CalculateMakeableContracts(IGame game)
+        private IEnumerable<IContract> CalculateMakeableContracts(IBoard board)
         {
-            var table = new DdTableDealPbn(game.Board.HandsToPbn());
+            var table = new DdTableDealPbn(board.HandsToPbn());
 
             var results = new DdTableResults
             {
@@ -200,7 +204,7 @@ namespace ContractBridge.Solver.Impl
             var currentDeal = new DdDeal
             {
                 trump = (int)contract.Denomination,
-                first = (int)session.Game!.Board.Dealer!, // TODO Is this the dealer or the declarer???
+                first = (int)session.Game!.Lead!,
                 currentTrickSuit = new int[3] { -1, -1, -1 }, // TODO
                 currentTrickRank = new int[3] { -1, -1, -1 }, // TODO
                 remainCards = GetRemainingCards(session.Board)
