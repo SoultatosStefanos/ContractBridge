@@ -1,10 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using ContractBridge.Core;
 using ContractBridge.Core.Impl;
-
-// TODO Test enumeration conversions
 
 namespace ContractBridge.Solver.Impl
 {
@@ -44,7 +43,7 @@ namespace ContractBridge.Solver.Impl
         public int[] equals; // Bit string of ranks for equivalent lower rank cards.
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 13)]
-        public int[] score; // -1 for target not reaached, otherwise target or max no of tricks.
+        public int[] score; // -1 for target not reached, otherwise target or max no of tricks.
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -91,54 +90,37 @@ namespace ContractBridge.Solver.Impl
 
     internal class BoHaglundDoubleDummySolution : IDoubleDummySolution
     {
-        private readonly IEnumerable<IContract> _makeableContracts;
+        private readonly IEnumerable<IContract> _contracts;
 
-        private readonly IDictionary<IContract, IEnumerable<ICard>> _optimalPlays;
+        private readonly IDictionary<IContract, IEnumerable<ICard>> _plays;
 
         public BoHaglundDoubleDummySolution(
-            IEnumerable<IContract> makeableContracts,
-            IDictionary<IContract, IEnumerable<ICard>> optimalPlays
+            IEnumerable<IContract> contracts,
+            IDictionary<IContract, IEnumerable<ICard>> plays
         )
         {
-            _makeableContracts = makeableContracts;
-            _optimalPlays = optimalPlays;
+            _contracts = contracts;
+            _plays = plays;
         }
 
         public IContract? MakeableContract(Seat declarer, Denomination denomination)
         {
-            return _makeableContracts.FirstOrDefault(c => c.Declarer == declarer && c.Denomination == denomination);
+            return _contracts.FirstOrDefault(c => c.Declarer == declarer && c.Denomination == denomination);
         }
 
         public IEnumerable<IContract> MakeableContracts(Seat declarer)
         {
-            return _makeableContracts.Where(c => c.Declarer == declarer);
+            return _contracts.Where(c => c.Declarer == declarer);
         }
 
         public IEnumerable<ICard> OptimalPlays(IContract contract)
         {
-            return _optimalPlays.TryGetValue(contract, out var play) ? play : Enumerable.Empty<ICard>();
+            return _plays.TryGetValue(contract, out var play) ? play : Enumerable.Empty<ICard>();
         }
     }
 
     public class BoHaglundDoubleDummySolver : IDoubleDummySolver
     {
-        private static readonly Denomination[] StrainOrder =
-        {
-            Denomination.Spades,
-            Denomination.Hearts,
-            Denomination.Diamonds,
-            Denomination.Clubs,
-            Denomination.NoTrumps
-        };
-
-        private static readonly Seat[] SeatOrder =
-        {
-            Seat.North,
-            Seat.East,
-            Seat.South,
-            Seat.West
-        };
-
         private readonly IContractFactory _contractFactory;
 
         public BoHaglundDoubleDummySolver(IContractFactory contractFactory)
@@ -171,6 +153,26 @@ namespace ContractBridge.Solver.Impl
             return new BoHaglundDoubleDummySolution(enumerableMakeableContracts, optimalPlays);
         }
 
+        private static int StrainToInt(Denomination strain)
+        {
+            return strain != Denomination.NoTrumps ? 4 - (int)strain : 4;
+        }
+
+        private static int SuitToInt(Suit suit)
+        {
+            return 4 - (int)suit;
+        }
+
+        private static Suit IntToSuit(int suit)
+        {
+            return (Suit)(4 + suit);
+        }
+
+        private static IEnumerable<T> EnumerateEnumValues<T>(Type enumType)
+        {
+            return (IEnumerable<T>)Enum.GetValues(enumType).GetEnumerator();
+        }
+
         private IEnumerable<IContract> CalculateMakeableContracts(IBoard board)
         {
             var table = new DdTableDealPbn(board.HandsToPbn());
@@ -186,19 +188,17 @@ namespace ContractBridge.Solver.Impl
                 throw new DoubleDummySolverException($"CalcDDtablePBN failed with status {status}");
             }
 
-            var next = 0;
-            var makeableContracts = new List<IContract>();
-            foreach (var strain in StrainOrder)
-            {
-                makeableContracts.AddRange(
-                    from declarer in SeatOrder
-                    let tricks = results.solution[next++]
-                    where tricks > 0
-                    select _contractFactory.Create((Level)tricks - 6, strain, declarer, null)
-                );
-            }
+            return DetermineMakeableContracts();
 
-            return makeableContracts;
+            IEnumerable<IContract> DetermineMakeableContracts()
+            {
+                var next = 0;
+                return (from strain in EnumerateEnumValues<Denomination>(typeof(Denomination))
+                    from declarer in EnumerateEnumValues<Seat>(typeof(Seat))
+                    let tricks = results.solution[next++]
+                    where tricks > 6
+                    select _contractFactory.Create((Level)tricks - 6, strain, declarer, null)).ToList();
+            }
         }
 
         private static IEnumerable<ICard> CalculateOptimalPlays(ISession session, IContract contract)
@@ -213,8 +213,8 @@ namespace ContractBridge.Solver.Impl
 
             var currentDeal = new DdDeal
             {
-                trump = (int)contract.Denomination,
-                first = (int)game.Lead!,
+                trump = StrainToInt(contract.Denomination),
+                first = (int)(Seat)game.Lead!,
                 currentTrickSuit = new[]
                 {
                     CurrentTrickSuitToBit(0),
@@ -250,7 +250,7 @@ namespace ContractBridge.Solver.Impl
             {
                 var playedCards = game.PlayedCards;
                 var card = playedCards.ElementAtOrDefault(index);
-                return card != null ? (int)card.Suit : -1;
+                return card != null ? SuitToInt(card.Suit) : -1;
             }
 
             int CurrentTrickRankToBit(int index)
@@ -266,7 +266,7 @@ namespace ContractBridge.Solver.Impl
 
                 for (var i = 0; i < futureTricks.cards; ++i)
                 {
-                    var suit = (Suit)futureTricks.suit[i];
+                    var suit = IntToSuit(futureTricks.suit[i]);
                     var rank = (Rank)futureTricks.rank[i];
 
                     optimalPlays.Add(session.Deck[rank, suit]);
@@ -280,7 +280,7 @@ namespace ContractBridge.Solver.Impl
         {
             var remainingCards = new uint[16];
 
-            foreach (var seat in SeatOrder)
+            foreach (var seat in EnumerateEnumValues<Seat>(typeof(Seat)))
             {
                 var hand = board.Hand(seat);
 
@@ -288,7 +288,7 @@ namespace ContractBridge.Solver.Impl
 
                 foreach (var card in hand)
                 {
-                    var suitIndex = (int)card.Suit;
+                    var suitIndex = SuitToInt(card.Suit);
                     var rankBitPosition = (int)card.Rank - 2;
 
                     remainingCards[handIndex * 4 + suitIndex] |= 1U << rankBitPosition;
