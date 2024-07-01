@@ -456,5 +456,21 @@ namespace ContractBridge.Tests.Core.Impl
                 Assert.That(_auction.FinalContract, Is.Null);
             });
         }
+
+        [Test]
+        public void NoPlayIsPossibleAfterFinalContract()
+        {
+            _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.East);
+            _auction.Pass(Seat.South);
+            _auction.Pass(Seat.West);
+            _auction.Pass(Seat.North);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_auction.CanCall(new Bid(Level.Two, Denomination.Clubs), Seat.East), Is.False);
+                Assert.That(_auction.CanPass(Seat.East), Is.False);
+                Assert.That(_auction.CanDouble(Seat.East), Is.False);
+            });
+        }
     }
 }

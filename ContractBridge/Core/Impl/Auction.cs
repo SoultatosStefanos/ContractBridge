@@ -122,6 +122,11 @@ namespace ContractBridge.Core.Impl
                 return false;
             }
 
+            if (FinalContract != null)
+            {
+                return false;
+            }
+
             if (turn != seat)
             {
                 return false;
@@ -141,6 +146,11 @@ namespace ContractBridge.Core.Impl
             {
                 return false;
             }
+            
+            if (FinalContract != null)
+            {
+                return false;
+            }
 
             return turn == seat;
         }
@@ -148,6 +158,11 @@ namespace ContractBridge.Core.Impl
         public bool CanDouble(Seat seat)
         {
             if (Turn is not { } turn)
+            {
+                return false;
+            }
+            
+            if (FinalContract != null)
             {
                 return false;
             }
@@ -184,6 +199,11 @@ namespace ContractBridge.Core.Impl
                 throw new AuctionPlayOutOfTurnException();
             }
 
+            if (FinalContract != null)
+            {
+                throw new AuctionFinalContractAlreadyMade();
+            }
+            
             if (turn != seat)
             {
                 throw new AuctionPlayOutOfTurnException();
@@ -209,6 +229,11 @@ namespace ContractBridge.Core.Impl
             if (Turn is not { } turn)
             {
                 throw new AuctionPlayOutOfTurnException();
+            }
+            
+            if (FinalContract != null)
+            {
+                throw new AuctionFinalContractAlreadyMade();
             }
 
             if (turn != seat)
@@ -243,6 +268,11 @@ namespace ContractBridge.Core.Impl
             if (Turn is not { } turn)
             {
                 throw new AuctionPlayOutOfTurnException();
+            }
+            
+            if (FinalContract != null)
+            {
+                throw new AuctionFinalContractAlreadyMade();
             }
 
             if (turn != seat)

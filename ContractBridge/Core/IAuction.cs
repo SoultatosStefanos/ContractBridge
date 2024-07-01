@@ -23,8 +23,13 @@ namespace ContractBridge.Core
     {
     }
 
-    public class AuctionReReDoubleException : Exception
+    public class AuctionReReDoubleException : AuctionPlayException
     {
+    }
+
+    public class AuctionFinalContractAlreadyMade : AuctionPlayException
+    {
+        
     }
 
     public interface IAuction
