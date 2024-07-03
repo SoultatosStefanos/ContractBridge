@@ -97,14 +97,14 @@ namespace ContractBridge.Tests.Core.Impl
         [Test]
         public void CantCallWithLowerOrSameLevel()
         {
-            _auction.Call(new Bid(Level.Seven, Denomination.Spades), Seat.East);
+            _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.East);
 
             Assert.Multiple(() =>
             {
-                Assert.That(_auction.CanCall(new Bid(Level.Seven, Denomination.Spades), Seat.South), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.Six, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Seven, Denomination.Clubs), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Six, Denomination.NoTrumps), Seat.South), Is.False);
                 Assert.That(_auction.CanCall(new Bid(Level.Five, Denomination.Spades), Seat.South), Is.False);
-                Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.Spades), Seat.South), Is.False);
+                Assert.That(_auction.CanCall(new Bid(Level.Four, Denomination.NoTrumps), Seat.South), Is.False);
                 Assert.That(_auction.CanCall(new Bid(Level.Three, Denomination.Spades), Seat.South), Is.False);
                 Assert.That(_auction.CanCall(new Bid(Level.Two, Denomination.Spades), Seat.South), Is.False);
                 Assert.That(_auction.CanCall(new Bid(Level.One, Denomination.Spades), Seat.South), Is.False);
@@ -181,13 +181,13 @@ namespace ContractBridge.Tests.Core.Impl
             {
                 Assert.Throws<AuctionCallTooLowException>(() =>
                 {
-                    _auction.Call(new Bid(Level.One, Denomination.Clubs), Seat.South);
-                    _auction.Call(new Bid(Level.Two, Denomination.Clubs), Seat.South);
-                    _auction.Call(new Bid(Level.Three, Denomination.Clubs), Seat.South);
-                    _auction.Call(new Bid(Level.Four, Denomination.Clubs), Seat.South);
-                    _auction.Call(new Bid(Level.Five, Denomination.Clubs), Seat.South);
-                    _auction.Call(new Bid(Level.Six, Denomination.Clubs), Seat.South);
-                    _auction.Call(new Bid(Level.Seven, Denomination.Clubs), Seat.South);
+                    _auction.Call(new Bid(Level.One, Denomination.Spades), Seat.South);
+                    _auction.Call(new Bid(Level.Two, Denomination.Spades), Seat.South);
+                    _auction.Call(new Bid(Level.Three, Denomination.Spades), Seat.South);
+                    _auction.Call(new Bid(Level.Four, Denomination.Spades), Seat.South);
+                    _auction.Call(new Bid(Level.Five, Denomination.Spades), Seat.South);
+                    _auction.Call(new Bid(Level.Six, Denomination.Spades), Seat.South);
+                    _auction.Call(new Bid(Level.Seven, Denomination.Spades), Seat.South);
                 });
             });
         }

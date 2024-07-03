@@ -146,7 +146,7 @@ namespace ContractBridge.Core.Impl
             {
                 return false;
             }
-            
+
             if (FinalContract != null)
             {
                 return false;
@@ -161,7 +161,7 @@ namespace ContractBridge.Core.Impl
             {
                 return false;
             }
-            
+
             if (FinalContract != null)
             {
                 return false;
@@ -203,7 +203,7 @@ namespace ContractBridge.Core.Impl
             {
                 throw new AuctionFinalContractAlreadyMade();
             }
-            
+
             if (turn != seat)
             {
                 throw new AuctionPlayOutOfTurnException();
@@ -230,7 +230,7 @@ namespace ContractBridge.Core.Impl
             {
                 throw new AuctionPlayOutOfTurnException();
             }
-            
+
             if (FinalContract != null)
             {
                 throw new AuctionFinalContractAlreadyMade();
@@ -269,7 +269,7 @@ namespace ContractBridge.Core.Impl
             {
                 throw new AuctionPlayOutOfTurnException();
             }
-            
+
             if (FinalContract != null)
             {
                 throw new AuctionFinalContractAlreadyMade();
@@ -389,7 +389,22 @@ namespace ContractBridge.Core.Impl
 
         private static bool IsCallTooLow(IBid bid, IBid lastBid)
         {
-            return bid.Level <= lastBid.Level && bid.Denomination <= lastBid.Denomination;
+            return !IsHigher(bid, lastBid);
+        }
+
+        private static bool IsHigher(IBid bid, IBid from)
+        {
+            if (bid.Level > from.Level)
+            {
+                return true;
+            }
+
+            if (bid.Level == from.Level)
+            {
+                return bid.Denomination > from.Denomination;
+            }
+
+            return false;
         }
 
         private BidEntry? LastBidEntry()
