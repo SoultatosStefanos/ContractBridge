@@ -3,7 +3,7 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/TestProjectMapping/=986D2DC0_002D2A4F_002D41E9_002DBE0F_002D7FE1F39D2CDB/@EntryIndexedValue">BF2F71DC-AF2E-426F-9566-79268243908C</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/TestTemplateMapping/=MSTest/@EntryIndexedValue">d6790ab7-33c2-4425-b2c9-51480cd1a852</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/TestTemplateMapping/=NUnit3x/@EntryIndexedValue">db4927dd-2e12-48a7-9a84-2b7e3e31b9c8</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0b1afd61_002D1dcb_002D4cc0_002Db047_002D8bdfb196b4dd/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="DeckTest #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0b1afd61_002D1dcb_002D4cc0_002Db047_002D8bdfb196b4dd/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="DeckTest #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.DeckTest&lt;/TestId&gt;
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.SeatExtensionsTest&lt;/TestId&gt;
@@ -18,6 +18,7 @@
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.CardTest&lt;/TestId&gt;
     &lt;TestId&gt;MSTest::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Solver.Impl.BoHaglundDoubleDummySolverTest&lt;/TestId&gt;
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Solver.Impl.BoHaglundDoubleDummySolverTest&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.TrickTest&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=61900ca4_002D7a47_002D47eb_002D880f_002D708e8b3fa18a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="DeckTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
@@ -34,6 +35,6 @@
     &lt;TestId&gt;NUnit3x::BF2F71DC-AF2E-426F-9566-79268243908C::.NETFramework,Version=v4.7.1::ContractBridge.Tests.Core.Impl.ScoringSystemTest&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d0cccda5_002Db59b_002D489b_002Db8d9_002D76dad57a4688/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="DeckTest #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d0cccda5_002Db59b_002D489b_002Db8d9_002D76dad57a4688/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="DeckTest #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Project Location="/home/stef/Documents/Projects/ContractBridge/ContractBridge.Tests" Presentation="&amp;lt;ContractBridge.Tests&amp;gt;" /&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
