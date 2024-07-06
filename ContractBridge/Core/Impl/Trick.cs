@@ -20,7 +20,7 @@ namespace ContractBridge.Core.Impl
 
         public IEnumerator<ICard> GetEnumerator()
         {
-            return (IEnumerator<ICard>)_cards.GetEnumerator();
+            return ((IEnumerable<ICard>)_cards).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

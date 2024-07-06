@@ -140,6 +140,7 @@
         <Compile Include="Core\Impl\HandTest.cs"/>
         <Compile Include="Core\Impl\ScoringSystemTest.cs"/>
         <Compile Include="Core\Impl\SessionTest.cs"/>
+        <Compile Include="Core\Impl\TrickTest.cs"/>
         <Compile Include="Core\SeatExtensionsTest.cs"/>
         <Compile Include="Solver\Impl\BoHaglundDoubleDummySolverTest.cs"/>
     </ItemGroup>
