@@ -20,6 +20,8 @@ namespace ContractBridge.Solver
 
     public interface IDoubleDummySolver
     {
-        IDoubleDummySolution Analyze(ISession session);
+        IDoubleDummyContractsSolution AnalyzeContracts(ISession session);
+
+        IDoubleDummyPlaysSolution AnalyzePlays(ISession session, IContract contract);
     }
 }

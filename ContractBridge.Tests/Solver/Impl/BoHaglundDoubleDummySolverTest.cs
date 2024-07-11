@@ -30,17 +30,17 @@ namespace ContractBridge.Tests.Solver.Impl
         private BoHaglundDoubleDummySolver _solver;
 
         [Test]
-        public void DoesNotThrowOnAuction()
+        public void AnalyzeContractsDoesNotThrowOnAuction()
         {
             _session.Board.Dealer = Seat.North;
             _session.Deck.Shuffle(new Random());
             _session.Deck.Deal(_session.Board);
 
-            Assert.DoesNotThrow(() => { _solver.Analyze(_session); });
+            Assert.DoesNotThrow(() => { _solver.AnalyzeContracts(_session); });
         }
 
         [Test]
-        public void DoesNotThrowOnPlay()
+        public void AnalyzeContractsDoesNotThrowOnPlay()
         {
             _session.Board.Dealer = Seat.North;
             _session.Deck.Shuffle(new Random());
@@ -53,7 +53,26 @@ namespace ContractBridge.Tests.Solver.Impl
             _session.Auction.Pass(Seat.South);
             _session.Auction.Pass(Seat.West);
 
-            Assert.DoesNotThrow(() => { _solver.Analyze(_session); });
+            Assert.DoesNotThrow(() => { _solver.AnalyzeContracts(_session); });
+        }
+
+        [Test]
+        public void AnalyzePlaysDoesNotThrowOnPlay()
+        {
+            _session.Board.Dealer = Seat.North;
+            _session.Deck.Shuffle(new Random());
+            _session.Deck.Deal(_session.Board);
+
+            Assert.That(_session.Auction, Is.Not.Null);
+
+            _session.Auction.Call(new Bid(Level.Five, Denomination.Clubs), Seat.North);
+            _session.Auction.Pass(Seat.East);
+            _session.Auction.Pass(Seat.South);
+            _session.Auction.Pass(Seat.West);
+
+            Assert.That(_session.Auction.FinalContract, Is.Not.Null);
+
+            Assert.DoesNotThrow(() => { _solver.AnalyzePlays(_session, _session.Auction.FinalContract); });
         }
     }
 }

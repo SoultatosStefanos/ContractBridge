@@ -5,11 +5,9 @@ using System.Runtime.InteropServices;
 using ContractBridge.Core;
 using ContractBridge.Core.Impl;
 
-// TODO Break up
-
 namespace ContractBridge.Solver.Impl
 {
-    #region DdNative
+    #region DdNativeHelpers
 
     internal class DdsHelper
     {
@@ -22,6 +20,80 @@ namespace ContractBridge.Solver.Impl
             return result;
         }
     }
+
+    internal static class EnumerableExtensions
+    {
+        public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> self)
+        {
+            return self.Select((item, index) => (item, index));
+        }
+    }
+
+    internal static class DdsExtensions
+    {
+        internal static int ToDdsOrder(this Suit suit)
+        {
+            return suit switch
+            {
+                Suit.Clubs => 3,
+                Suit.Diamonds => 2,
+                Suit.Hearts => 1,
+                Suit.Spades => 0,
+                _ => throw new ArgumentOutOfRangeException(nameof(suit), suit, null)
+            };
+        }
+
+        internal static int ToDdsOrder(this Denomination denomination)
+        {
+            return denomination switch
+            {
+                Denomination.Clubs => 3,
+                Denomination.Diamonds => 2,
+                Denomination.Hearts => 1,
+                Denomination.Spades => 0,
+                Denomination.NoTrumps => 4,
+                _ => throw new ArgumentOutOfRangeException(nameof(denomination), denomination, null)
+            };
+        }
+
+        internal static int ToDdsOrder(this Seat seat)
+        {
+            return seat switch
+            {
+                Seat.North => 0,
+                Seat.East => 1,
+                Seat.South => 2,
+                Seat.West => 3,
+                _ => throw new ArgumentOutOfRangeException(nameof(seat), seat, null)
+            };
+        }
+
+        internal static int ToDdsOrder(this Rank rank)
+        {
+            return (int)rank;
+        }
+
+        internal static Suit ToSuit(this int ddsOrder)
+        {
+            return ddsOrder switch
+            {
+                0 => Suit.Spades,
+                1 => Suit.Hearts,
+                2 => Suit.Diamonds,
+                3 => Suit.Clubs,
+                _ => throw new ArgumentOutOfRangeException(nameof(ddsOrder), ddsOrder, null)
+            };
+        }
+
+        internal static Rank ToRank(this int ddsOrder)
+        {
+            return (Rank)ddsOrder;
+        }
+    }
+
+    #endregion
+
+    #region DdNative
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct DdTableDealPbn
@@ -110,19 +182,15 @@ namespace ContractBridge.Solver.Impl
 
     #endregion
 
-    internal class BoHaglundDoubleDummySolution : IDoubleDummySolution
+    #region Solutions
+
+    internal class BoHaglundDoubleDummyContractsSolution : IDoubleDummyContractsSolution
     {
         private readonly IEnumerable<IContract> _contracts;
 
-        private readonly IDictionary<IContract, IEnumerable<ICard>> _plays;
-
-        public BoHaglundDoubleDummySolution(
-            IEnumerable<IContract> contracts,
-            IDictionary<IContract, IEnumerable<ICard>> plays
-        )
+        public BoHaglundDoubleDummyContractsSolution(IEnumerable<IContract> contracts)
         {
             _contracts = contracts;
-            _plays = plays;
         }
 
         public IContract? MakeableContract(Seat declarer, Denomination denomination)
@@ -134,12 +202,26 @@ namespace ContractBridge.Solver.Impl
         {
             return _contracts.Where(c => c.Declarer == declarer);
         }
+    }
 
-        public IEnumerable<ICard> OptimalPlays(IContract contract)
+    internal class BoHaglundDoubleDummyPlaysSolution : IDoubleDummyPlaysSolution
+    {
+        private readonly IDictionary<Seat, IEnumerable<ICard>> _playsBySeat;
+
+        public BoHaglundDoubleDummyPlaysSolution(IDictionary<Seat, IEnumerable<ICard>> playsBySeat)
         {
-            return _plays.TryGetValue(contract, out var play) ? play : Enumerable.Empty<ICard>();
+            _playsBySeat = playsBySeat;
+        }
+
+        public IEnumerable<ICard> OptimalPlays(Seat seat)
+        {
+            return _playsBySeat.TryGetValue(seat, out var play) ? play : Enumerable.Empty<ICard>();
         }
     }
+
+    #endregion
+
+    #region Solver
 
     public class BoHaglundDoubleDummySolver : IDoubleDummySolver
     {
@@ -150,7 +232,7 @@ namespace ContractBridge.Solver.Impl
             _contractFactory = contractFactory;
         }
 
-        public IDoubleDummySolution Analyze(ISession session)
+        public IDoubleDummyContractsSolution AnalyzeContracts(ISession session)
         {
             if (session.Phase < Phase.Auction)
             {
@@ -158,21 +240,30 @@ namespace ContractBridge.Solver.Impl
             }
 
             var makeableContracts = CalculateMakeableContracts(session.Board);
-            var optimalPlays = new Dictionary<IContract, IEnumerable<ICard>>();
 
-            var enumerableMakeableContracts = makeableContracts as IContract[] ?? makeableContracts.ToArray();
+            return new BoHaglundDoubleDummyContractsSolution(
+                makeableContracts as IContract[] ?? makeableContracts.ToArray()
+            );
+        }
 
-            if (session.Phase != Phase.Play)
+        public IDoubleDummyPlaysSolution AnalyzePlays(ISession session, IContract contract)
+        {
+            if (session.Phase < Phase.Auction)
             {
-                return new BoHaglundDoubleDummySolution(enumerableMakeableContracts, optimalPlays);
+                throw new InvalidPhaseForSolving();
             }
 
-            foreach (var contract in enumerableMakeableContracts)
+            var optimalPlaysBySeat = new Dictionary<Seat, IEnumerable<ICard>>();
+
+            var optimalPlays = CalculateOptimalPlays(session, contract);
+
+            foreach (var seat in EnumValues<Seat>(typeof(Seat)))
             {
-                optimalPlays[contract] = CalculateOptimalPlays(session, contract);
+                // ReSharper disable once PossibleMultipleEnumeration
+                optimalPlaysBySeat[seat] = optimalPlays.Where(card => session.Board.Hand(seat).Contains(card)).ToList();
             }
 
-            return new BoHaglundDoubleDummySolution(enumerableMakeableContracts, optimalPlays);
+            return new BoHaglundDoubleDummyPlaysSolution(optimalPlaysBySeat);
         }
 
         private static IEnumerable<T> EnumValues<T>(Type enumType)
@@ -271,4 +362,6 @@ namespace ContractBridge.Solver.Impl
             }
         }
     }
+
+    #endregion
 }
