@@ -106,15 +106,17 @@
         <Compile Include="Solver\IDoubleDummySolver.cs"/>
         <Compile Include="Solver\Impl\BoHaglundDoubleDummySolver.cs"/>
         <Compile Include="Solver\Impl\BoHaglundDoubleDummySolverFactory.cs"/>
+        <Compile Include="Solver\Impl\DdsExtensions.cs"/>
         <Compile Include="Solver\Impl\IDoubleDummySolverFactory.cs"/>
+        <Compile Include="Solver\Impl\IEnumerableExtensions.cs"/>
     </ItemGroup>
     <ItemGroup>
-      <Content Include="dds.dll">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="libdds.so">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
+        <Content Include="dds.dll">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="libdds.so">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

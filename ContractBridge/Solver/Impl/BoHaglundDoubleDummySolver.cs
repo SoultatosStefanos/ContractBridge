@@ -5,32 +5,60 @@ using System.Runtime.InteropServices;
 using ContractBridge.Core;
 using ContractBridge.Core.Impl;
 
+// TODO Break up
+
 namespace ContractBridge.Solver.Impl
 {
     #region DdNative
 
+    internal class DdsHelper
+    {
+        internal static char[] PbnToChars(string pbn)
+        {
+            var result = new char[80];
+            for (var i = 0; i < pbn.Length; i++)
+                result[i] = pbn[i];
+
+            return result;
+        }
+    }
+
     [StructLayout(LayoutKind.Sequential)]
-    internal struct DdDeal
+    internal struct DdTableDealPbn
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 80)]
+        public char[] cards;
+
+        public DdTableDealPbn(string pbnCards)
+        {
+            cards = DdsHelper.PbnToChars(pbnCards);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct DdDealPbn
     {
         public int trump; // Spades=0, Hearts=1, Diamonds=2, Clubs=3,  NT=4
 
         public int first; // 0=North, 1=East, 2=South, 3=West, leading hand for the trick.
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        public int[] currentTrickSuit; // Initialize with -1 if no cards played yet
+        public int[] currentTrickSuit; // Initialize with 0 if no cards played yet
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        public int[] currentTrickRank; // Initialize with -1 if no cards played yet
+        public int[] currentTrickRank; // Initialize with 0 if no cards played yet
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public uint[] remainCards; // 4x4. 1st index hand (0-3), 2nd index suit (0-3), ...
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 80)]
+        public char[] remainCards;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct DdFutureTricks
     {
+        [MarshalAs(UnmanagedType.I4)]
         public int nodes; // Number of searched nodes
 
+        [MarshalAs(UnmanagedType.I4)]
         public int cards; // No. of alternative cards
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 13)]
@@ -47,20 +75,6 @@ namespace ContractBridge.Solver.Impl
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct DdTableDealPbn
-    {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 80)]
-        public char[] cards;
-
-        public DdTableDealPbn(string pbnCards)
-        {
-            cards = new char[80];
-            for (var i = 0; i < pbnCards.Length; i++)
-                cards[i] = pbnCards[i];
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     internal struct DdTableResults
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
@@ -74,8 +88,8 @@ namespace ContractBridge.Solver.Impl
 #else
         [DllImport("libdds.so")]
 #endif
-        public static extern int SolveBoard(
-            [In] DdDeal ddDeal, // struct deal dl, 
+        public static extern int SolveBoardPBN(
+            [In] DdDealPbn ddDeal, // struct deal dl, 
             int target, // -1 to solve for all possible tricks
             int solutions, // 3 = all solutions
             int mode, // Mode (0 = normal)
@@ -161,21 +175,6 @@ namespace ContractBridge.Solver.Impl
             return new BoHaglundDoubleDummySolution(enumerableMakeableContracts, optimalPlays);
         }
 
-        private static int StrainToInt(Denomination strain)
-        {
-            return strain != Denomination.NoTrumps ? 4 - (int)strain : 4;
-        }
-
-        private static int SuitToInt(Suit suit)
-        {
-            return 4 - (int)suit;
-        }
-
-        private static Suit IntToSuit(int suit)
-        {
-            return (Suit)(4 + suit);
-        }
-
         private static IEnumerable<T> EnumValues<T>(Type enumType)
         {
             return (T[])Enum.GetValues(enumType);
@@ -219,34 +218,31 @@ namespace ContractBridge.Solver.Impl
             const int mode = 0; // normal
             const int threadIndex = 0; // single threaded
 
-            var currentDeal = new DdDeal
+            var trump = contract.Denomination.ToDdsOrder();
+            var first = game.Lead!.Value.ToDdsOrder();
+
+            var currentTrickSuit = new int[3];
+            var currentTrickRank = new int[3];
+            foreach (var (trick, i) in game.PlayedCards.WithIndex())
             {
-                trump = StrainToInt(contract.Denomination),
-                first = (int)(Seat)game.Lead!,
-                currentTrickSuit = new[]
-                {
-                    CurrentTrickSuitToBit(0),
-                    CurrentTrickSuitToBit(1),
-                    CurrentTrickSuitToBit(2)
-                },
-                currentTrickRank = new[]
-                {
-                    CurrentTrickRankToBit(0),
-                    CurrentTrickRankToBit(1),
-                    CurrentTrickRankToBit(2)
-                },
-                remainCards = HandsTo4X4Matrix(board)
+                currentTrickRank[i] = trick.Rank.ToDdsOrder();
+                currentTrickSuit[i] = trick.Suit.ToDdsOrder();
+            }
+
+            var remainingCards = DdsHelper.PbnToChars(board.ToPbn());
+
+            var currentDeal = new DdDealPbn
+            {
+                trump = trump,
+                first = first,
+                currentTrickSuit = currentTrickSuit,
+                currentTrickRank = currentTrickRank,
+                remainCards = remainingCards
             };
 
-            var futureTricks = new DdFutureTricks
-            {
-                suit = new int[13],
-                rank = new int[13],
-                equals = new int[13],
-                score = new int[13]
-            };
+            var futureTricks = new DdFutureTricks();
 
-            var status = DdsImport.SolveBoard(currentDeal, target, solutions, mode, ref futureTricks, threadIndex);
+            var status = DdsImport.SolveBoardPBN(currentDeal, target, solutions, mode, ref futureTricks, threadIndex);
             if (status != 1)
             {
                 throw new DoubleDummySolverException($"SolveBoard failed with status {status}");
@@ -254,56 +250,25 @@ namespace ContractBridge.Solver.Impl
 
             return DetermineOptimalPlays();
 
-            int CurrentTrickSuitToBit(int index)
-            {
-                var playedCards = game.PlayedCards;
-                var card = playedCards.ElementAtOrDefault(index);
-                return card != null ? SuitToInt(card.Suit) : -1;
-            }
-
-            int CurrentTrickRankToBit(int index)
-            {
-                var playedCards = game.PlayedCards;
-                var card = playedCards.ElementAtOrDefault(index);
-                return card != null ? (int)card.Rank : -1;
-            }
-
             IEnumerable<ICard> DetermineOptimalPlays()
             {
                 var optimalPlays = new List<ICard>();
 
                 for (var i = 0; i < futureTricks.cards; ++i)
                 {
-                    var suit = IntToSuit(futureTricks.suit[i]);
-                    var rank = (Rank)futureTricks.rank[i];
+                    if (futureTricks.rank[i] == 0) // No optimal plays.
+                    {
+                        break;
+                    }
+
+                    var rank = futureTricks.rank[i].ToRank();
+                    var suit = futureTricks.suit[i].ToSuit();
 
                     optimalPlays.Add(session.Deck[rank, suit]);
                 }
 
                 return optimalPlays;
             }
-        }
-
-        private static uint[] HandsTo4X4Matrix(IBoard board)
-        {
-            var remainingCards = new uint[16];
-
-            foreach (var seat in EnumValues<Seat>(typeof(Seat)))
-            {
-                var hand = board.Hand(seat);
-
-                var handIndex = (int)seat;
-
-                foreach (var card in hand)
-                {
-                    var suitIndex = SuitToInt(card.Suit);
-                    var rankBitPosition = (int)card.Rank - 2;
-
-                    remainingCards[handIndex * 4 + suitIndex] |= 1U << rankBitPosition;
-                }
-            }
-
-            return remainingCards;
         }
     }
 }

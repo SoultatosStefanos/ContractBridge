@@ -2,8 +2,6 @@ using System;
 using ContractBridge.Core;
 using ContractBridge.Core.Impl;
 using ContractBridge.Solver.Impl;
-using JetBrains.Annotations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using Assert = NUnit.Framework.Assert;
 
@@ -13,9 +11,6 @@ namespace ContractBridge.Tests.Solver.Impl
     [TestOf(typeof(BoHaglundDoubleDummySolver))]
     public class BoHaglundDoubleDummySolverTest
     {
-        private Session _session;
-        private BoHaglundDoubleDummySolver _solver;
-
         [SetUp]
         public void SetUp()
         {
@@ -31,12 +26,32 @@ namespace ContractBridge.Tests.Solver.Impl
             );
         }
 
+        private Session _session;
+        private BoHaglundDoubleDummySolver _solver;
+
         [Test]
-        public void DoesNotThrow()
+        public void DoesNotThrowOnAuction()
         {
             _session.Board.Dealer = Seat.North;
             _session.Deck.Shuffle(new Random());
             _session.Deck.Deal(_session.Board);
+
+            Assert.DoesNotThrow(() => { _solver.Analyze(_session); });
+        }
+
+        [Test]
+        public void DoesNotThrowOnPlay()
+        {
+            _session.Board.Dealer = Seat.North;
+            _session.Deck.Shuffle(new Random());
+            _session.Deck.Deal(_session.Board);
+
+            Assert.That(_session.Auction, Is.Not.Null);
+
+            _session.Auction.Call(new Bid(Level.Five, Denomination.Clubs), Seat.North);
+            _session.Auction.Pass(Seat.East);
+            _session.Auction.Pass(Seat.South);
+            _session.Auction.Pass(Seat.West);
 
             Assert.DoesNotThrow(() => { _solver.Analyze(_session); });
         }

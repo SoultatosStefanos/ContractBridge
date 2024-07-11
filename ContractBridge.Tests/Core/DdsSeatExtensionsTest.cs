@@ -4,8 +4,8 @@ using NUnit.Framework;
 namespace ContractBridge.Tests.Core
 {
     [TestFixture]
-    [TestOf(typeof(SeatExtensions))]
-    public class SeatExtensionsTest
+    [TestOf(typeof(DdsSeatExtensions))]
+    public class DdsSeatExtensionsTest
     {
         [Test]
         public void NextSeatFromNorthIsEast()

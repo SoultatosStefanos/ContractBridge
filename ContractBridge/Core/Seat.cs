@@ -10,7 +10,7 @@ namespace ContractBridge.Core
         West
     }
 
-    public static class SeatExtensions
+    public static class DdsSeatExtensions
     {
         public static Seat NextSeat(this Seat seat)
         {
