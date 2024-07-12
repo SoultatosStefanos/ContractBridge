@@ -27,6 +27,8 @@ namespace ContractBridge.Core
 
         IPair OtherPair(IPair pair);
 
+        void Reset();
+
         event EventHandler<PhaseEventArgs> PhaseChanged;
 
         public sealed class PhaseEventArgs : EventArgs

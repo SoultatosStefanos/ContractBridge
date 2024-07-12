@@ -94,6 +94,14 @@ namespace ContractBridge.Core.Impl
             };
         }
 
+        public void Reset()
+        {
+            Phase = Phase.Setup;
+
+            Auction = null;
+            Game = null;
+        }
+
         public event EventHandler<ISession.PhaseEventArgs>? PhaseChanged;
 
         private void RaisePhaseChangedEvent(Phase phase)
