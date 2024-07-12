@@ -110,16 +110,16 @@ namespace ContractBridge.Core.Impl
                 return false;
             }
 
-            if (LastPlayEntry() is not var (lastPlayCard, _))
+            if (LeadPlayEntry() is not var (leadPlayCard, _))
             {
                 return true;
             }
 
-            return lastPlayCard.Suit == card.Suit || CantFollowSuit(lastPlayCard);
+            return leadPlayCard.Suit == card.Suit || CantFollowSuit();
 
-            bool CantFollowSuit(ICard lastCard)
+            bool CantFollowSuit()
             {
-                return seatHand.All(handCard => handCard.Suit != lastCard.Suit);
+                return seatHand.All(handCard => handCard.Suit != leadPlayCard.Suit);
             }
         }
 
@@ -265,9 +265,9 @@ namespace ContractBridge.Core.Impl
             Done?.Invoke(this, EventArgs.Empty);
         }
 
-        private PlayEntry? LastPlayEntry()
+        private PlayEntry? LeadPlayEntry()
         {
-            return _playEntries.LastOrDefault();
+            return _playEntries.FirstOrDefault();
         }
     }
 }
