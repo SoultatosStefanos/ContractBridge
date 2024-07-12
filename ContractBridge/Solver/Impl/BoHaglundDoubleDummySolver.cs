@@ -206,16 +206,16 @@ namespace ContractBridge.Solver.Impl
 
     internal class BoHaglundDoubleDummyPlaysSolution : IDoubleDummyPlaysSolution
     {
-        private readonly IDictionary<Seat, IEnumerable<ICard>> _playsBySeat;
+        private readonly IDictionary<Seat, IEnumerable<(ICard, Priority)>> _playsBySeat;
 
-        public BoHaglundDoubleDummyPlaysSolution(IDictionary<Seat, IEnumerable<ICard>> playsBySeat)
+        public BoHaglundDoubleDummyPlaysSolution(IDictionary<Seat, IEnumerable<(ICard, Priority)>> playsBySeat)
         {
             _playsBySeat = playsBySeat;
         }
 
-        public IEnumerable<ICard> OptimalPlays(Seat seat)
+        public IEnumerable<(ICard, Priority)> OptimalPlays(Seat seat)
         {
-            return _playsBySeat.TryGetValue(seat, out var play) ? play : Enumerable.Empty<ICard>();
+            return _playsBySeat.TryGetValue(seat, out var play) ? play : Enumerable.Empty<(ICard, Priority)>();
         }
     }
 
@@ -225,6 +225,10 @@ namespace ContractBridge.Solver.Impl
 
     public class BoHaglundDoubleDummySolver : IDoubleDummySolver
     {
+        private const int HighPriorityThreshold = 10;
+        private const int MediumPriorityThreshold = 5;
+        private const int CantReachTricksScore = -1;
+
         private readonly IContractFactory _contractFactory;
 
         public BoHaglundDoubleDummySolver(IContractFactory contractFactory)
@@ -253,14 +257,16 @@ namespace ContractBridge.Solver.Impl
                 throw new InvalidPhaseForSolving();
             }
 
-            var optimalPlaysBySeat = new Dictionary<Seat, IEnumerable<ICard>>();
+            var optimalPlaysBySeat = new Dictionary<Seat, IEnumerable<(ICard, Priority)>>();
 
             var optimalPlays = CalculateOptimalPlays(session, contract);
 
             foreach (var seat in EnumValues<Seat>(typeof(Seat)))
             {
                 // ReSharper disable once PossibleMultipleEnumeration
-                optimalPlaysBySeat[seat] = optimalPlays.Where(card => session.Board.Hand(seat).Contains(card)).ToList();
+                optimalPlaysBySeat[seat] = optimalPlays
+                    .Where(cardPlay => session.Board.Hand(seat).Contains(cardPlay.Item1))
+                    .ToList();
             }
 
             return new BoHaglundDoubleDummyPlaysSolution(optimalPlaysBySeat);
@@ -299,7 +305,7 @@ namespace ContractBridge.Solver.Impl
             }
         }
 
-        private static IEnumerable<ICard> CalculateOptimalPlays(ISession session, IContract contract)
+        private static IEnumerable<(ICard, Priority)> CalculateOptimalPlays(ISession session, IContract contract)
         {
             var board = session.Board;
             var game = session.Game!;
@@ -341,9 +347,9 @@ namespace ContractBridge.Solver.Impl
 
             return DetermineOptimalPlays();
 
-            IEnumerable<ICard> DetermineOptimalPlays()
+            IEnumerable<(ICard, Priority)> DetermineOptimalPlays()
             {
-                var optimalPlays = new List<ICard>();
+                var optimalPlays = new List<(ICard, Priority)>();
 
                 for (var i = 0; i < futureTricks.cards; ++i)
                 {
@@ -354,11 +360,30 @@ namespace ContractBridge.Solver.Impl
 
                     var rank = futureTricks.rank[i].ToRank();
                     var suit = futureTricks.suit[i].ToSuit();
+                    var score = futureTricks.score[i];
 
-                    optimalPlays.Add(session.Deck[rank, suit]);
+                    if (score == CantReachTricksScore)
+                    {
+                        break;
+                    }
+
+                    // Sort moves by priority.
+                    optimalPlays.Add((session.Deck[rank, suit], AssignPriority(score)));
                 }
 
+                optimalPlays.Sort((x, y) => y.Item2.CompareTo(x.Item2));
+
                 return optimalPlays;
+            }
+
+            Priority AssignPriority(int score)
+            {
+                return score switch
+                {
+                    >= HighPriorityThreshold => Priority.High,
+                    >= MediumPriorityThreshold => Priority.Medium,
+                    _ => Priority.Low
+                };
             }
         }
     }
